@@ -65,7 +65,8 @@
         }
 
         input[type="text"],
-        textarea {
+        textarea,
+        select {
             width: 100%;
             padding: 12px 15px;
             border: 2px solid #e0e0e0;
@@ -73,10 +74,21 @@
             font-size: 15px;
             transition: all 0.3s ease;
             font-family: inherit;
+            background-color: white;
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            padding-right: 40px;
         }
 
         input[type="text"]:focus,
-        textarea:focus {
+        textarea:focus,
+        select:focus {
             outline: none;
             border-color: #00DE93;
             box-shadow: 0 0 0 3px rgba(0, 222, 147, 0.1);
@@ -358,33 +370,60 @@
         <form id="annotationForm">
             <div class="form-group">
                 <label for="userName">User Name <span class="required">*</span></label>
+                <select id="userName" name="userName" required>
+                    <option value="">-- Select User --</option>
+                    <option value="User1">User1</option>
+                    <option value="User2">User2</option>
+                    <option value="User3">User3</option>
+                    <option value="User4">User4</option>
+                    <option value="custom">Type custom...</option>
+                </select>
                 <input 
                     type="text" 
-                    id="userName" 
-                    name="userName" 
-                    placeholder="Enter your name" 
-                    required
+                    id="userNameCustom" 
+                    name="userNameCustom" 
+                    placeholder="Enter custom user name" 
+                    style="display: none; margin-top: 10px;"
                 >
             </div>
 
             <div class="form-group">
                 <label for="deviceId">Device ID <span class="required">*</span></label>
+                <select id="deviceId" name="deviceId" required>
+                    <option value="">-- Select Device --</option>
+                    <option value="Device1">Device1</option>
+                    <option value="Device2">Device2</option>
+                    <option value="Device3">Device3</option>
+                    <option value="Device4">Device4</option>
+                    <option value="custom">Type custom...</option>
+                </select>
                 <input 
                     type="text" 
-                    id="deviceId" 
-                    name="deviceId" 
-                    placeholder="Enter device ID" 
-                    required
+                    id="deviceIdCustom" 
+                    name="deviceIdCustom" 
+                    placeholder="Enter custom device ID" 
+                    style="display: none; margin-top: 10px;"
                 >
             </div>
 
             <div class="form-group">
-                <label for="context">Context <span class="required">*</span></label>
+                <label for="eventId">Event ID <span class="required">*</span></label>
+                <select id="eventId" name="eventId" required>
+                    <option value="">-- Select Event --</option>
+                    <option value="Event A">Event A</option>
+                    <option value="Event B">Event B</option>
+                    <option value="Event C">Event C</option>
+                    <option value="Event D">Event D</option>
+                    <option value="Event E">Event E</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="context">Context</label>
                 <textarea 
                     id="context" 
                     name="context" 
-                    placeholder="Enter your annotation or context information here..." 
-                    required
+                    placeholder="Enter your annotation or context information here (optional)..." 
                 ></textarea>
             </div>
 
@@ -408,30 +447,87 @@
         const messageDiv = document.getElementById('message');
         const loadingDiv = document.getElementById('loading');
 
+        // Handle custom input fields visibility
+        const userNameSelect = document.getElementById('userName');
+        const userNameCustom = document.getElementById('userNameCustom');
+        const deviceIdSelect = document.getElementById('deviceId');
+        const deviceIdCustom = document.getElementById('deviceIdCustom');
+
+        userNameSelect.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                userNameCustom.style.display = 'block';
+                userNameCustom.required = true;
+            } else {
+                userNameCustom.style.display = 'none';
+                userNameCustom.required = false;
+                userNameCustom.value = '';
+            }
+        });
+
+        deviceIdSelect.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                deviceIdCustom.style.display = 'block';
+                deviceIdCustom.required = true;
+            } else {
+                deviceIdCustom.style.display = 'none';
+                deviceIdCustom.required = false;
+                deviceIdCustom.value = '';
+            }
+        });
+
         // Load saved user data from localStorage
+        // Only User Name and Device ID are saved - Event ID must be selected each time
         window.addEventListener('DOMContentLoaded', () => {
             const savedUserName = localStorage.getItem('userName');
             const savedDeviceId = localStorage.getItem('deviceId');
             
             if (savedUserName) {
-                document.getElementById('userName').value = savedUserName;
+                const userNameSelect = document.getElementById('userName');
+                const options = Array.from(userNameSelect.options).map(opt => opt.value);
+                if (options.includes(savedUserName)) {
+                    userNameSelect.value = savedUserName;
+                } else {
+                    userNameSelect.value = 'custom';
+                    userNameCustom.style.display = 'block';
+                    userNameCustom.required = true;
+                    userNameCustom.value = savedUserName;
+                }
             }
             if (savedDeviceId) {
-                document.getElementById('deviceId').value = savedDeviceId;
+                const deviceIdSelect = document.getElementById('deviceId');
+                const options = Array.from(deviceIdSelect.options).map(opt => opt.value);
+                if (options.includes(savedDeviceId)) {
+                    deviceIdSelect.value = savedDeviceId;
+                } else {
+                    deviceIdSelect.value = 'custom';
+                    deviceIdCustom.style.display = 'block';
+                    deviceIdCustom.required = true;
+                    deviceIdCustom.value = savedDeviceId;
+                }
             }
+            // Event ID is NOT saved - user must select it each time
         });
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             // Get form values
-            const userName = document.getElementById('userName').value.trim();
-            const deviceId = document.getElementById('deviceId').value.trim();
+            let userName = document.getElementById('userName').value.trim();
+            let deviceId = document.getElementById('deviceId').value.trim();
+            const eventId = document.getElementById('eventId').value.trim();
             const context = document.getElementById('context').value.trim();
 
-            // Validate
-            if (!userName || !deviceId || !context) {
-                showMessage('Please fill in all fields', 'error');
+            // Handle custom inputs
+            if (userName === 'custom') {
+                userName = document.getElementById('userNameCustom').value.trim();
+            }
+            if (deviceId === 'custom') {
+                deviceId = document.getElementById('deviceIdCustom').value.trim();
+            }
+
+            // Validate required fields only (context is optional)
+            if (!userName || !deviceId || !eventId) {
+                showMessage('Please fill in all required fields', 'error');
                 return;
             }
 
@@ -441,7 +537,8 @@
                 return;
             }
 
-            // Save userName and deviceId to localStorage
+            // Save only userName and deviceId to localStorage
+            // Event ID is NOT saved - user must select it each time
             localStorage.setItem('userName', userName);
             localStorage.setItem('deviceId', deviceId);
 
@@ -461,6 +558,7 @@
                     body: JSON.stringify({
                         userName: userName,
                         deviceId: deviceId,
+                        eventId: eventId,
                         context: context,
                         timestamp: new Date().toISOString()
                     })
@@ -469,7 +567,8 @@
                 // Note: With 'no-cors', we won't get a readable response
                 // We'll assume success if no error is thrown
                 
-                // Clear only the context field
+                // Clear Event ID and Context fields (User Name and Device ID remain)
+                document.getElementById('eventId').value = '';
                 document.getElementById('context').value = '';
                 
                 showMessage('✓ Data saved successfully to Google Drive!', 'success');

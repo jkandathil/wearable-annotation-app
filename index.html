@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annotation App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #00DE93 0%, #00a870 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .logo {
+            display: block;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            object-fit: contain;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #00DE93;
+            box-shadow: 0 0 0 3px rgba(0, 222, 147, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #00DE93 0%, #00a870 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 222, 147, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+            display: block;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #00DE93;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        /* Responsive Design - Mobile & Tablet Optimizations */
+        
+        /* Tablets (portrait and landscape) */
+        @media screen and (max-width: 768px) {
+            .container {
+                padding: 30px 25px;
+                max-width: 100%;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .subtitle {
+                font-size: 13px;
+            }
+
+            .logo {
+                width: 70px;
+                height: 70px;
+                margin-bottom: 15px;
+            }
+        }
+
+        /* Mobile phones */
+        @media screen and (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 25px 20px;
+                border-radius: 15px;
+            }
+
+            h1 {
+                font-size: 22px;
+                margin-bottom: 8px;
+            }
+
+            .subtitle {
+                font-size: 12px;
+                margin-bottom: 25px;
+            }
+
+            .logo {
+                width: 60px;
+                height: 60px;
+                margin-bottom: 15px;
+            }
+
+            label {
+                font-size: 13px;
+                margin-bottom: 6px;
+            }
+
+            input[type="text"],
+            textarea {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+
+            textarea {
+                min-height: 100px;
+            }
+
+            .submit-btn {
+                padding: 13px;
+                font-size: 15px;
+            }
+
+            .form-group {
+                margin-bottom: 20px;
+            }
+
+            .message {
+                padding: 12px;
+                font-size: 14px;
+            }
+        }
+
+        /* Small mobile phones */
+        @media screen and (max-width: 360px) {
+            .container {
+                padding: 20px 15px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            .logo {
+                width: 50px;
+                height: 50px;
+            }
+
+            input[type="text"],
+            textarea {
+                font-size: 13px;
+                padding: 9px 10px;
+            }
+        }
+
+        /* Landscape mode for mobile devices */
+        @media screen and (max-height: 600px) and (orientation: landscape) {
+            body {
+                padding: 15px 20px;
+            }
+
+            .container {
+                margin: 10px auto;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+
+            .logo {
+                width: 50px;
+                height: 50px;
+                margin-bottom: 10px;
+            }
+
+            h1 {
+                font-size: 20px;
+                margin-bottom: 5px;
+            }
+
+            .subtitle {
+                margin-bottom: 15px;
+            }
+
+            .form-group {
+                margin-bottom: 15px;
+            }
+
+            textarea {
+                min-height: 80px;
+            }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            /* Larger touch targets for mobile */
+            .submit-btn {
+                min-height: 48px;
+            }
+
+            input[type="text"],
+            textarea {
+                min-height: 44px;
+            }
+
+            /* Prevent zoom on iOS when focusing inputs */
+            input[type="text"],
+            textarea {
+                font-size: 16px;
+            }
+        }
+
+        /* High DPI screens (Retina displays) */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .logo {
+                image-rendering: -webkit-optimize-contrast;
+                image-rendering: crisp-edges;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="logo_noze_fixed.png" alt="Logo" class="logo">
+        <h1>Annotation App</h1>
+        <p class="subtitle">Submit your annotations to Google Drive</p>
+        
+        <form id="annotationForm">
+            <div class="form-group">
+                <label for="userName">User Name <span class="required">*</span></label>
+                <input 
+                    type="text" 
+                    id="userName" 
+                    name="userName" 
+                    placeholder="Enter your name" 
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="deviceId">Device ID <span class="required">*</span></label>
+                <input 
+                    type="text" 
+                    id="deviceId" 
+                    name="deviceId" 
+                    placeholder="Enter device ID" 
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="context">Context <span class="required">*</span></label>
+                <textarea 
+                    id="context" 
+                    name="context" 
+                    placeholder="Enter your annotation or context information here..." 
+                    required
+                ></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">Submit</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #666;">Saving to Google Drive...</p>
+        </div>
+
+        <div class="message" id="message"></div>
+    </div>
+
+    <script>
+        // IMPORTANT: Replace this URL with your Google Apps Script web app URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRZvW-HzSiuejJy4wHxp6cxiEfVdkJRGAHlcG8iMZoLfWKNLmySdQNolAXlPG4KX-t4g/exec';
+
+        const form = document.getElementById('annotationForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const messageDiv = document.getElementById('message');
+        const loadingDiv = document.getElementById('loading');
+
+        // Load saved user data from localStorage
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedUserName = localStorage.getItem('userName');
+            const savedDeviceId = localStorage.getItem('deviceId');
+            
+            if (savedUserName) {
+                document.getElementById('userName').value = savedUserName;
+            }
+            if (savedDeviceId) {
+                document.getElementById('deviceId').value = savedDeviceId;
+            }
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Get form values
+            const userName = document.getElementById('userName').value.trim();
+            const deviceId = document.getElementById('deviceId').value.trim();
+            const context = document.getElementById('context').value.trim();
+
+            // Validate
+            if (!userName || !deviceId || !context) {
+                showMessage('Please fill in all fields', 'error');
+                return;
+            }
+
+            // Check if SCRIPT_URL is configured
+            if (SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
+                showMessage('Please configure the Google Apps Script URL in the code', 'error');
+                return;
+            }
+
+            // Save userName and deviceId to localStorage
+            localStorage.setItem('userName', userName);
+            localStorage.setItem('deviceId', deviceId);
+
+            // Disable form and show loading
+            submitBtn.disabled = true;
+            loadingDiv.classList.add('show');
+            messageDiv.style.display = 'none';
+
+            try {
+                // Send data to Google Apps Script
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Required for Google Apps Script
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userName: userName,
+                        deviceId: deviceId,
+                        context: context,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+
+                // Note: With 'no-cors', we won't get a readable response
+                // We'll assume success if no error is thrown
+                
+                // Clear only the context field
+                document.getElementById('context').value = '';
+                
+                showMessage('✓ Data saved successfully to Google Drive!', 'success');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('✗ Failed to save data. Please try again.', 'error');
+            } finally {
+                // Re-enable form and hide loading
+                submitBtn.disabled = false;
+                loadingDiv.classList.remove('show');
+            }
+        });
+
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = 'message ' + type;
+            messageDiv.style.display = 'block';
+            
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>
+

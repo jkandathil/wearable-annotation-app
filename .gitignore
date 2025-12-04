@@ -1,0 +1,15 @@
+# Google Apps Script file (for reference only, not deployed)
+# This file should be copied to Google Apps Script editor
+google-apps-script.js
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+

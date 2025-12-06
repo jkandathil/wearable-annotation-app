@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -144,6 +145,7 @@
                 opacity: 0;
                 transform: translateY(-10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -185,8 +187,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .required {
@@ -194,7 +201,7 @@
         }
 
         /* Responsive Design - Mobile & Tablet Optimizations */
-        
+
         /* Tablets (portrait and landscape) */
         @media screen and (max-width: 768px) {
             .container {
@@ -335,6 +342,7 @@
 
         /* Touch device optimizations */
         @media (hover: none) and (pointer: coarse) {
+
             /* Larger touch targets for mobile */
             .submit-btn {
                 min-height: 48px;
@@ -353,249 +361,469 @@
         }
 
         /* High DPI screens (Retina displays) */
-        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+        @media (-webkit-min-device-pixel-ratio: 2),
+        (min-resolution: 192dpi) {
             .logo {
                 image-rendering: -webkit-optimize-contrast;
                 image-rendering: crisp-edges;
             }
         }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            background: #f0f0f0;
+            padding: 5px;
+            border-radius: 12px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            color: #666;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #00DE93;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .metric-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #eee;
+        }
+
+        .metric-label {
+            display: block;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            display: block;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .last-updated {
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        .full-width-input {
+            width: 100%;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <img src="logo_noze_fixed.png" alt="Logo" class="logo">
-        <h1>Annotation App</h1>
-        <p class="subtitle">Submit your annotations to Google Drive</p>
-        
-        <form id="annotationForm">
-            <div class="form-group">
-                <label for="userName">User Name <span class="required">*</span></label>
-                <select id="userName" name="userName" required>
-                    <option value="">-- Select User --</option>
-                    <option value="User1">User1</option>
-                    <option value="User2">User2</option>
-                    <option value="User3">User3</option>
-                    <option value="User4">User4</option>
-                    <option value="custom">Type custom...</option>
-                </select>
-                <input 
-                    type="text" 
-                    id="userNameCustom" 
-                    name="userNameCustom" 
-                    placeholder="Enter custom user name" 
-                    style="display: none; margin-top: 10px;"
-                >
-            </div>
+
+        <!-- Navigation Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('annotation')">Annotation</button>
+            <button class="tab-btn" onclick="switchTab('health')">Device Health</button>
+        </div>
+
+        <!-- Annotation Page -->
+        <div id="annotationPage" class="page active">
+            <h1>Annotation App</h1>
+            <p class="subtitle">Submit your annotations to Google Drive</p>
+
+            <form id="annotationForm">
+                <div class="form-group">
+                    <label for="userName">User Name <span class="required">*</span></label>
+                    <select id="userName" name="userName" required>
+                        <option value="">-- Select User --</option>
+                        <option value="User1">User1</option>
+                        <option value="User2">User2</option>
+                        <option value="User3">User3</option>
+                        <option value="User4">User4</option>
+                        <option value="custom">Type custom...</option>
+                    </select>
+                    <input type="text" id="userNameCustom" name="userNameCustom" placeholder="Enter custom user name"
+                        style="display: none; margin-top: 10px;">
+                </div>
+
+                <div class="form-group">
+                    <label for="deviceId">Device ID <span class="required">*</span></label>
+                    <select id="deviceId" name="deviceId" required>
+                        <option value="">-- Select Device --</option>
+                        <option value="Device1">Device1</option>
+                        <option value="Device2">Device2</option>
+                        <option value="Device3">Device3</option>
+                        <option value="Device4">Device4</option>
+                        <option value="custom">Type custom...</option>
+                    </select>
+                    <input type="text" id="deviceIdCustom" name="deviceIdCustom" placeholder="Enter custom device ID"
+                        style="display: none; margin-top: 10px;">
+                </div>
+
+                <div class="form-group">
+                    <label for="eventId">Event ID <span class="required">*</span></label>
+                    <select id="eventId" name="eventId" required>
+                        <option value="">-- Select Event --</option>
+                        <option value="Event A">Event A</option>
+                        <option value="Event B">Event B</option>
+                        <option value="Event C">Event C</option>
+                        <option value="Event D">Event D</option>
+                        <option value="Event E">Event E</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="context">Context</label>
+                    <textarea id="context" name="context"
+                        placeholder="Enter your annotation or context information here (optional)..."></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">Submit</button>
+            </form>
+        </div>
+
+        <!-- Device Health Page -->
+        <div id="healthPage" class="page" style="display: none;">
+            <h1>Device Health</h1>
+            <p class="subtitle">Check latest sensor status</p>
 
             <div class="form-group">
-                <label for="deviceId">Device ID <span class="required">*</span></label>
-                <select id="deviceId" name="deviceId" required>
-                    <option value="">-- Select Device --</option>
-                    <option value="Device1">Device1</option>
-                    <option value="Device2">Device2</option>
-                    <option value="Device3">Device3</option>
-                    <option value="Device4">Device4</option>
-                    <option value="custom">Type custom...</option>
-                </select>
-                <input 
-                    type="text" 
-                    id="deviceIdCustom" 
-                    name="deviceIdCustom" 
-                    placeholder="Enter custom device ID" 
-                    style="display: none; margin-top: 10px;"
-                >
+                <label for="healthDeviceId">Device ID (SN) <span class="required">*</span></label>
+                <input type="text" id="healthDeviceId" placeholder="Enter Device ID (e.g. 0000000223-3324-smd-nz)"
+                    class="full-width-input">
             </div>
 
-            <div class="form-group">
-                <label for="eventId">Event ID <span class="required">*</span></label>
-                <select id="eventId" name="eventId" required>
-                    <option value="">-- Select Event --</option>
-                    <option value="Event A">Event A</option>
-                    <option value="Event B">Event B</option>
-                    <option value="Event C">Event C</option>
-                    <option value="Event D">Event D</option>
-                    <option value="Event E">Event E</option>
-                </select>
-            </div>
+            <button onclick="checkHealth()" class="submit-btn" id="checkHealthBtn">Check Health</button>
 
-            <div class="form-group">
-                <label for="context">Context</label>
-                <textarea 
-                    id="context" 
-                    name="context" 
-                    placeholder="Enter your annotation or context information here (optional)..." 
-                ></textarea>
-            </div>
+            <!-- Results Section -->
+            <div id="healthResults" style="display: none; margin-top: 30px;">
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <span class="metric-label">Temperature</span>
+                        <span class="metric-value" id="tempValue">--</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Humidity</span>
+                        <span class="metric-value" id="humValue">--</span>
+                    </div>
+                </div>
 
-            <button type="submit" class="submit-btn" id="submitBtn">Submit</button>
-        </form>
+                <div class="chart-container">
+                    <canvas id="channelsChart"></canvas>
+                </div>
+
+                <p class="last-updated">Last Updated: <span id="lastUpdatedTime">--</span></p>
+            </div>
+        </div>
 
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            <p style="margin-top: 10px; color: #666;">Saving to Google Drive...</p>
+            <p style="margin-top: 10px; color: #666;" id="loadingText">Processing...</p>
         </div>
 
         <div class="message" id="message"></div>
     </div>
 
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
         // IMPORTANT: Replace this URL with your Google Apps Script web app URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRZvW-HzSiuejJy4wHxp6cxiEfVdkJRGAHlcG8iMZoLfWKNLmySdQNolAXlPG4KX-t4g/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby2JCBRfyjOBwUSW5I-mFgLWib9LVo4tEotnt28V_Pq-TWb38MLHYUPusI4pRNAcFhA9g/exec';
 
         const form = document.getElementById('annotationForm');
         const submitBtn = document.getElementById('submitBtn');
         const messageDiv = document.getElementById('message');
         const loadingDiv = document.getElementById('loading');
+        const loadingText = document.getElementById('loadingText');
+        let myChart = null;
 
-        // Handle custom input fields visibility
+        // Tab Switching
+        function switchTab(tabName) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(el => {
+                el.style.display = 'none';
+                el.classList.remove('active');
+            });
+
+            // Deactivate all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected page
+            document.getElementById(tabName + 'Page').style.display = 'block';
+            document.getElementById(tabName + 'Page').classList.add('active');
+
+            // Activate button
+            const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn =>
+                btn.textContent.toLowerCase().includes(tabName === 'annotation' ? 'annotation' : 'device health')
+            );
+            if (activeBtn) activeBtn.classList.add('active');
+
+            // Clear messages
+            messageDiv.style.display = 'none';
+        }
+
+        // Handle custom input fields (Annotation Page)
         const userNameSelect = document.getElementById('userName');
         const userNameCustom = document.getElementById('userNameCustom');
         const deviceIdSelect = document.getElementById('deviceId');
         const deviceIdCustom = document.getElementById('deviceIdCustom');
 
-        userNameSelect.addEventListener('change', function() {
-            if (this.value === 'custom') {
-                userNameCustom.style.display = 'block';
-                userNameCustom.required = true;
-            } else {
-                userNameCustom.style.display = 'none';
-                userNameCustom.required = false;
-                userNameCustom.value = '';
-            }
+        userNameSelect.addEventListener('change', function () {
+            toggleCustomInput(this, userNameCustom);
         });
 
-        deviceIdSelect.addEventListener('change', function() {
-            if (this.value === 'custom') {
-                deviceIdCustom.style.display = 'block';
-                deviceIdCustom.required = true;
-            } else {
-                deviceIdCustom.style.display = 'none';
-                deviceIdCustom.required = false;
-                deviceIdCustom.value = '';
-            }
+        deviceIdSelect.addEventListener('change', function () {
+            toggleCustomInput(this, deviceIdCustom);
         });
 
-        // Load saved user data from localStorage
-        // Only User Name and Device ID are saved - Event ID must be selected each time
+        function toggleCustomInput(select, customInput) {
+            if (select.value === 'custom') {
+                customInput.style.display = 'block';
+                customInput.required = true;
+            } else {
+                customInput.style.display = 'none';
+                customInput.required = false;
+                customInput.value = '';
+            }
+        }
+
+        // Load saved data
         window.addEventListener('DOMContentLoaded', () => {
             const savedUserName = localStorage.getItem('userName');
             const savedDeviceId = localStorage.getItem('deviceId');
-            
-            if (savedUserName) {
-                const userNameSelect = document.getElementById('userName');
-                const options = Array.from(userNameSelect.options).map(opt => opt.value);
-                if (options.includes(savedUserName)) {
-                    userNameSelect.value = savedUserName;
-                } else {
-                    userNameSelect.value = 'custom';
-                    userNameCustom.style.display = 'block';
-                    userNameCustom.required = true;
-                    userNameCustom.value = savedUserName;
-                }
+
+            restoreSelection(userNameSelect, userNameCustom, savedUserName);
+            restoreSelection(deviceIdSelect, deviceIdCustom, savedDeviceId);
+
+            const savedHealthDeviceId = localStorage.getItem('healthDeviceId');
+            if (savedHealthDeviceId) {
+                document.getElementById('healthDeviceId').value = savedHealthDeviceId;
             }
-            if (savedDeviceId) {
-                const deviceIdSelect = document.getElementById('deviceId');
-                const options = Array.from(deviceIdSelect.options).map(opt => opt.value);
-                if (options.includes(savedDeviceId)) {
-                    deviceIdSelect.value = savedDeviceId;
-                } else {
-                    deviceIdSelect.value = 'custom';
-                    deviceIdCustom.style.display = 'block';
-                    deviceIdCustom.required = true;
-                    deviceIdCustom.value = savedDeviceId;
-                }
-            }
-            // Event ID is NOT saved - user must select it each time
         });
 
+        function restoreSelection(select, customInput, savedValue) {
+            if (!savedValue) return;
+            const options = Array.from(select.options).map(opt => opt.value);
+            if (options.includes(savedValue)) {
+                select.value = savedValue;
+            } else {
+                select.value = 'custom';
+                customInput.style.display = 'block';
+                customInput.required = true;
+                customInput.value = savedValue;
+            }
+        }
+
+        // Handle Annotation Submit
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            // Get form values
-            let userName = document.getElementById('userName').value.trim();
-            let deviceId = document.getElementById('deviceId').value.trim();
-            const eventId = document.getElementById('eventId').value.trim();
+
+            let userName = userNameSelect.value === 'custom' ? userNameCustom.value.trim() : userNameSelect.value;
+            let deviceId = deviceIdSelect.value === 'custom' ? deviceIdCustom.value.trim() : deviceIdSelect.value;
+            const eventId = document.getElementById('eventId').value;
             const context = document.getElementById('context').value.trim();
 
-            // Handle custom inputs
-            if (userName === 'custom') {
-                userName = document.getElementById('userNameCustom').value.trim();
-            }
-            if (deviceId === 'custom') {
-                deviceId = document.getElementById('deviceIdCustom').value.trim();
-            }
-
-            // Validate required fields only (context is optional)
             if (!userName || !deviceId || !eventId) {
                 showMessage('Please fill in all required fields', 'error');
                 return;
             }
 
-            // Check if SCRIPT_URL is configured
-            if (SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
-                showMessage('Please configure the Google Apps Script URL in the code', 'error');
-                return;
-            }
-
-            // Save only userName and deviceId to localStorage
-            // Event ID is NOT saved - user must select it each time
             localStorage.setItem('userName', userName);
             localStorage.setItem('deviceId', deviceId);
 
-            // Disable form and show loading
             submitBtn.disabled = true;
+            loadingText.textContent = 'Saving to Google Drive...';
             loadingDiv.classList.add('show');
             messageDiv.style.display = 'none';
 
             try {
-                // Send data to Google Apps Script
-                const response = await fetch(SCRIPT_URL, {
+                // Using no-cors for simple submission
+                await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'no-cors', // Required for Google Apps Script
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        userName: userName,
-                        deviceId: deviceId,
-                        eventId: eventId,
-                        context: context,
-                        timestamp: new Date().toISOString()
+                        action: 'submit_annotation',
+                        userName, deviceId, eventId, context
                     })
                 });
 
-                // Note: With 'no-cors', we won't get a readable response
-                // We'll assume success if no error is thrown
-                
-                // Clear Event ID and Context fields (User Name and Device ID remain)
                 document.getElementById('eventId').value = '';
                 document.getElementById('context').value = '';
-                
-                showMessage('✓ Data saved successfully to Google Drive!', 'success');
-                
+                showMessage('✓ Data saved successfully!', 'success');
+
             } catch (error) {
-                console.error('Error:', error);
-                showMessage('✗ Failed to save data. Please try again.', 'error');
+                console.error(error);
+                showMessage('✗ Failed to save data.', 'error');
             } finally {
-                // Re-enable form and hide loading
                 submitBtn.disabled = false;
                 loadingDiv.classList.remove('show');
             }
         });
 
+        // Handle Device Health Check
+        async function checkHealth() {
+            const deviceId = document.getElementById('healthDeviceId').value.trim();
+            const checkBtn = document.getElementById('checkHealthBtn');
+            const resultsDiv = document.getElementById('healthResults');
+
+            if (!deviceId) {
+                showMessage('Please enter a Device ID', 'error');
+                return;
+            }
+
+            localStorage.setItem('healthDeviceId', deviceId);
+
+            checkBtn.disabled = true;
+            resultsDiv.style.display = 'none';
+            loadingText.textContent = 'Fetching device data...';
+            loadingDiv.classList.add('show');
+            messageDiv.style.display = 'none';
+
+            try {
+                // For fetching data we need a response, so we can't use no-cors if the server doesn't support CORS.
+                // Google Apps Script Web App needs to be deployed as "Anyone" (anonymous) to allow simple fetch,
+                // BUT browsers block CORS by default for Apps Script.
+                // The standard workaround is to use a redirect or JSONP, but standard fetch has issues.
+                // However, updated generic approach:
+                // We will attempt a standard fetch. If CORS fails, users verify deployment permissions.
+
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    // mode: 'cors', // default
+                    body: JSON.stringify({
+                        action: 'get_device_health',
+                        deviceId: deviceId
+                    })
+                });
+
+                if (!response.ok) throw new Error('Network response was not ok');
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayHealthResults(data);
+                } else {
+                    showMessage('Error: ' + data.message, 'error');
+                }
+
+            } catch (error) {
+                console.error(error);
+                showMessage('Error fetching data. Ensure valid Device ID and internet connection. Note: CORS issues may occur if script is not deployed with "Anyone" access.', 'error');
+            } finally {
+                checkBtn.disabled = false;
+                loadingDiv.classList.remove('show');
+            }
+        }
+
+        function displayHealthResults(data) {
+            document.getElementById('healthResults').style.display = 'block';
+            document.getElementById('tempValue').textContent = data.temperature;
+            document.getElementById('humValue').textContent = data.humidity;
+
+            // Format time
+            const timeLabel = data.timeSource === 'data' ? 'Data Timestamp' : 'File Last Updated';
+            let timeString = data.lastUpdated;
+            try {
+                // Try to format if it's a valid date string
+                const date = new Date(data.lastUpdated);
+                if (!isNaN(date.getTime())) {
+                    timeString = date.toLocaleString();
+                }
+            } catch (e) { }
+
+            document.getElementById('lastUpdatedTime').innerHTML = `<strong>${timeLabel}:</strong> ${timeString}`;
+
+            renderChart(data.channels.labels, data.channels.values);
+        }
+
+        function renderChart(labels, values) {
+            const ctx = document.getElementById('channelsChart').getContext('2d');
+
+            if (myChart) {
+                myChart.destroy();
+            }
+
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sensor Channels',
+                        data: values,
+                        backgroundColor: '#00DE93',
+                        borderColor: '#00a870',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#f0f0f0' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                maxRotation: 90,
+                                minRotation: 90,
+                                font: { size: 10 }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
         function showMessage(text, type) {
             messageDiv.textContent = text;
             messageDiv.className = 'message ' + type;
             messageDiv.style.display = 'block';
-            
-            // Auto-hide success messages after 5 seconds
             if (type === 'success') {
-                setTimeout(() => {
-                    messageDiv.style.display = 'none';
-                }, 5000);
+                setTimeout(() => messageDiv.style.display = 'none', 5000);
             }
         }
     </script>
 </body>
-</html>
 
+</html>

@@ -4,51 +4,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Annotation App</title>
+    <title>Deepskin</title>
     <style>
+        :root {
+            --primary-color: #00DE93;
+            --primary-hover: #00bd7e;
+            --bg-color: #f5f5f5;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-radius: 8px;
+        }
+
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #00DE93 0%, #00a870 100%);
-            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            min-height: 100vh;
             padding: 20px;
         }
 
         .container {
-            background: white;
+            background-color: var(--card-bg);
             padding: 40px;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 500px;
             width: 100%;
+            max-width: 500px;
         }
 
         .logo {
             display: block;
-            width: 80px;
-            height: 80px;
             margin: 0 auto 20px;
-            object-fit: contain;
+            max-width: 150px;
+            height: auto;
         }
 
         h1 {
-            color: #333;
-            margin-bottom: 10px;
             text-align: center;
+            color: var(--text-color);
+            margin-bottom: 10px;
             font-size: 28px;
         }
 
         .subtitle {
-            color: #666;
             text-align: center;
+            color: #666;
             margin-bottom: 30px;
             font-size: 14px;
         }
@@ -60,14 +68,18 @@
         label {
             display: block;
             margin-bottom: 8px;
-            color: #555;
             font-weight: 600;
+            color: #555;
             font-size: 14px;
         }
 
-        input[type="text"],
-        textarea,
-        select {
+        .required {
+            color: #dc3545;
+        }
+
+        select,
+        input,
+        textarea {
             width: 100%;
             padding: 12px 15px;
             border: 2px solid #e0e0e0;
@@ -78,20 +90,11 @@
             background-color: white;
         }
 
-        select {
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 15px center;
-            padding-right: 40px;
-        }
-
-        input[type="text"]:focus,
-        textarea:focus,
-        select:focus {
+        select:focus,
+        input:focus,
+        textarea:focus {
             outline: none;
-            border-color: #00DE93;
+            border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(0, 222, 147, 0.1);
         }
 
@@ -120,14 +123,11 @@
             box-shadow: 0 10px 20px rgba(0, 222, 147, 0.3);
         }
 
-        .submit-btn:active {
-            transform: translateY(0);
-        }
-
         .submit-btn:disabled {
             background: #ccc;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
 
         .message {
@@ -137,33 +137,18 @@
             text-align: center;
             font-weight: 500;
             display: none;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         .message.success {
-            background: #d4edda;
+            background-color: #d4edda;
             color: #155724;
-            border: 2px solid #c3e6cb;
-            display: block;
+            border: 1px solid #c3e6cb;
         }
 
         .message.error {
-            background: #f8d7da;
+            background-color: #f8d7da;
             color: #721c24;
-            border: 2px solid #f5c6cb;
-            display: block;
+            border: 1px solid #f5c6cb;
         }
 
         .loading {
@@ -178,8 +163,8 @@
 
         .spinner {
             border: 3px solid #f3f3f3;
-            border-top: 3px solid #00DE93;
             border-radius: 50%;
+            border-top: 3px solid var(--primary-color);
             width: 40px;
             height: 40px;
             animation: spin 1s linear infinite;
@@ -196,340 +181,457 @@
             }
         }
 
-        .container {
-            background-color: var(--card-bg);
-            padding: 40px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 500px;
+        /* Tabs */
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            background: #f0f0f0;
+            padding: 5px;
+            border-radius: 12px;
         }
 
-        <select id="userName" name="userName" required><option value="">-- Select User --</option><option value="User1">User1</option><option value="User2">User2</option><option value="User3">User3</option><option value="User4">User4</option><option value="custom">Type custom...</option></select><input type="text" id="userNameCustom" name="userNameCustom" placeholder="Enter custom user name"
-        style="display: none; margin-top: 10px;"></div><div class="form-group"><label for="deviceId">Device ID <span class="required">*</span></label><select id="deviceId" name="deviceId" required><option value="">-- Select Device --</option><option value="Device1">Device1</option><option value="Device2">Device2</option><option value="Device3">Device3</option><option value="Device4">Device4</option><option value="custom">Type custom...</option></select><input type="text" id="deviceIdCustom" name="deviceIdCustom" placeholder="Enter custom device ID"
-        style="display: none; margin-top: 10px;"></div><div class="form-group"><label for="eventId">Event ID <span class="required">*</span></label><select id="eventId" name="eventId" required><option value="">-- Select Event --</option><option value="Event A">Event A</option><option value="Event B">Event B</option><option value="Event C">Event C</option><option value="Event D">Event D</option><option value="Event E">Event E</option></select></div><div class="form-group"><label for="context">Context</label><textarea id="context" name="context"
-        placeholder="Enter your annotation or context information here (optional)..."></textarea></div><button type="submit" class="submit-btn" id="submitBtn">Submit</button></form></div>< !-- Device Health Page --><div id="healthPage" class="page" style="display: none;"><h1>Device Health</h1><p class="subtitle">Check latest sensor status</p><div class="form-group"><label for="healthDeviceId">Device ID (SN) <span class="required">*</span></label><input type="text" id="healthDeviceId" placeholder="Enter Device ID (e.g. 0000000223-3324-smd-nz)"
-        class="full-width-input"></div><button onclick="checkHealth()" class="submit-btn" id="checkHealthBtn">Check Health</button>< !-- Results Section --><div id="healthResults" style="display: none; margin-top: 30px;"><div class="metrics-grid"><div class="metric-card"><span class="metric-label">Temperature</span><span class="metric-value" id="tempValue">--</span></div><div class="metric-card"><span class="metric-label">Humidity</span><span class="metric-value" id="humValue">--</span></div></div><div class="chart-container"><canvas id="channelsChart"></canvas></div><p class="last-updated">Last Updated: <span id="lastUpdatedTime">--</span></p></div></div><div class="loading" id="loading"><div class="spinner"></div><p style="margin-top: 10px; color: #666;" id="loadingText">Processing...</p></div><div class="message" id="message"></div></div>< !-- Chart.js CDN --><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script> // IMPORTANT: Replace this URL with your Google Apps Script web app URL
-        const SCRIPT_URL='https://script.google.com/macros/s/AKfycby2JCBRfyjOBwUSW5I-mFgLWib9LVo4tEotnt28V_Pq-TWb38MLHYUPusI4pRNAcFhA9g/exec';
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            color: #666;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
 
-        const form=document.getElementById('annotationForm');
-        const submitBtn=document.getElementById('submitBtn');
-        const messageDiv=document.getElementById('message');
-        const loadingDiv=document.getElementById('loading');
-        const loadingText=document.getElementById('loadingText');
-        let myChart=null;
+        .tab-btn.active {
+            background: white;
+            color: #00DE93;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .metric-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #eee;
+        }
+
+        .metric-label {
+            display: block;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            display: block;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .last-updated {
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        .full-width-input {
+            width: 100%;
+        }
+
+        /* Fix for pixelated images */
+        img {
+            image-rendering: -webkit-optimize-contrast;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <img src="logo_noze_fixed.png" alt="Logo" class="logo">
+
+        <!-- Navigation Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('annotation')">Annotation</button>
+            <button class="tab-btn" onclick="switchTab('health')">Device Health</button>
+        </div>
+
+        <!-- Annotation Page -->
+        <div id="annotationPage" class="page active">
+            <h1>Deepskin</h1>
+            <p class="subtitle">Submit your annotations to Google Drive</p>
+
+            <form id="annotationForm">
+                <div class="form-group">
+                    <label for="userName">User Name <span class="required">*</span></label>
+                    <select id="userName" name="userName" required>
+                        <option value="">-- Select User --</option>
+                        <option value="User1">User1</option>
+                        <option value="User2">User2</option>
+                        <option value="User3">User3</option>
+                        <option value="User4">User4</option>
+                        <option value="custom">Type custom...</option>
+                    </select>
+                    <input type="text" id="userNameCustom" name="userNameCustom" placeholder="Enter custom user name"
+                        style="display: none; margin-top: 10px;">
+                </div>
+
+                <div class="form-group">
+                    <label for="deviceId">Device ID <span class="required">*</span></label>
+                    <select id="deviceId" name="deviceId" required>
+                        <option value="">-- Select Device --</option>
+                        <option value="Device1">Device1</option>
+                        <option value="Device2">Device2</option>
+                        <option value="Device3">Device3</option>
+                        <option value="Device4">Device4</option>
+                        <option value="custom">Type custom...</option>
+                    </select>
+                    <input type="text" id="deviceIdCustom" name="deviceIdCustom" placeholder="Enter custom device ID"
+                        style="display: none; margin-top: 10px;">
+                </div>
+
+                <div class="form-group">
+                    <label for="eventId">Event ID <span class="required">*</span></label>
+                    <select id="eventId" name="eventId" required>
+                        <option value="">-- Select Event --</option>
+                        <option value="Event A">Event A</option>
+                        <option value="Event B">Event B</option>
+                        <option value="Event C">Event C</option>
+                        <option value="Event D">Event D</option>
+                        <option value="Event E">Event E</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="context">Context</label>
+                    <textarea id="context" name="context"
+                        placeholder="Enter your annotation or context information here (optional)..."></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">Submit</button>
+            </form>
+        </div>
+
+        <!-- Device Health Page -->
+        <div id="healthPage" class="page" style="display: none;">
+            <h1>Device Health</h1>
+            <p class="subtitle">Check latest sensor status</p>
+
+            <div class="form-group">
+                <label for="healthDeviceId">Device ID (SN) <span class="required">*</span></label>
+                <input type="text" id="healthDeviceId" placeholder="Enter Device ID (e.g. 0000000223-3324-smd-nz)"
+                    class="full-width-input">
+            </div>
+
+            <button onclick="checkHealth()" class="submit-btn" id="checkHealthBtn">Check Health</button>
+
+            <!-- Results Section -->
+            <div id="healthResults" style="display: none; margin-top: 30px;">
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <span class="metric-label">Temperature</span>
+                        <span class="metric-value" id="tempValue">--</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Humidity</span>
+                        <span class="metric-value" id="humValue">--</span>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="channelsChart"></canvas>
+                </div>
+
+                <p class="last-updated">Last Updated: <span id="lastUpdatedTime">--</span></p>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #666;" id="loadingText">Processing...</p>
+        </div>
+
+        <div class="message" id="message"></div>
+    </div>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // IMPORTANT: Replace this URL with your Google Apps Script web app URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby2JCBRfyjOBwUSW5I-mFgLWib9LVo4tEotnt28V_Pq-TWb38MLHYUPusI4pRNAcFhA9g/exec';
+
+        const form = document.getElementById('annotationForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const messageDiv = document.getElementById('message');
+        const loadingDiv = document.getElementById('loading');
+        const loadingText = document.getElementById('loadingText');
+        let myChart = null;
 
         // Tab Switching
         function switchTab(tabName) {
-
             // Hide all pages
-            document.querySelectorAll('.page').forEach(el=> {
-                    el.style.display='none';
-                    el.classList.remove('active');
-                });
+            document.querySelectorAll('.page').forEach(el => {
+                el.style.display = 'none';
+                el.classList.remove('active');
+            });
 
             // Deactivate all buttons
-            document.querySelectorAll('.tab-btn').forEach(btn=> {
-                    btn.classList.remove('active');
-                });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
 
             // Show selected page
-            document.getElementById(tabName + 'Page').style.display='block';
+            document.getElementById(tabName + 'Page').style.display = 'block';
             document.getElementById(tabName + 'Page').classList.add('active');
 
             // Activate button
-            const activeBtn=Array.from(document.querySelectorAll('.tab-btn')).find(btn=> btn.textContent.toLowerCase().includes(tabName==='annotation' ? 'annotation' : 'device health'));
+            const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn =>
+                btn.textContent.toLowerCase().includes(tabName === 'annotation' ? 'annotation' : 'device health')
+            );
             if (activeBtn) activeBtn.classList.add('active');
 
             // Clear messages
-            messageDiv.style.display='none';
+            messageDiv.style.display = 'none';
         }
 
         // Handle custom input fields (Annotation Page)
-        const userNameSelect=document.getElementById('userName');
-        const userNameCustom=document.getElementById('userNameCustom');
-        const deviceIdSelect=document.getElementById('deviceId');
-        const deviceIdCustom=document.getElementById('deviceIdCustom');
+        const userNameSelect = document.getElementById('userName');
+        const userNameCustom = document.getElementById('userNameCustom');
+        const deviceIdSelect = document.getElementById('deviceId');
+        const deviceIdCustom = document.getElementById('deviceIdCustom');
 
         userNameSelect.addEventListener('change', function () {
-                toggleCustomInput(this, userNameCustom);
-            });
+            toggleCustomInput(this, userNameCustom);
+        });
 
         deviceIdSelect.addEventListener('change', function () {
-                toggleCustomInput(this, deviceIdCustom);
-            });
+            toggleCustomInput(this, deviceIdCustom);
+        });
 
         function toggleCustomInput(select, customInput) {
-            if (select.value==='custom') {
-                customInput.style.display='block';
-                customInput.required=true;
-            }
-
-            else {
-                customInput.style.display='none';
-                customInput.required=false;
-                customInput.value='';
+            if (select.value === 'custom') {
+                customInput.style.display = 'block';
+                customInput.required = true;
+            } else {
+                customInput.style.display = 'none';
+                customInput.required = false;
+                customInput.value = '';
             }
         }
 
         // Load saved data
-        window.addEventListener('DOMContentLoaded', ()=> {
-                const savedUserName=localStorage.getItem('userName');
-                const savedDeviceId=localStorage.getItem('deviceId');
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedUserName = localStorage.getItem('userName');
+            const savedDeviceId = localStorage.getItem('deviceId');
 
-                restoreSelection(userNameSelect, userNameCustom, savedUserName);
-                restoreSelection(deviceIdSelect, deviceIdCustom, savedDeviceId);
+            restoreSelection(userNameSelect, userNameCustom, savedUserName);
+            restoreSelection(deviceIdSelect, deviceIdCustom, savedDeviceId);
 
-                const savedHealthDeviceId=localStorage.getItem('healthDeviceId');
-
-                if (savedHealthDeviceId) {
-                    document.getElementById('healthDeviceId').value=savedHealthDeviceId;
-                }
-            });
+            const savedHealthDeviceId = localStorage.getItem('healthDeviceId');
+            if (savedHealthDeviceId) {
+                document.getElementById('healthDeviceId').value = savedHealthDeviceId;
+            }
+        });
 
         function restoreSelection(select, customInput, savedValue) {
-            if ( !savedValue) return;
-            const options=Array.from(select.options).map(opt=> opt.value);
-
+            if (!savedValue) return;
+            const options = Array.from(select.options).map(opt => opt.value);
             if (options.includes(savedValue)) {
-                select.value=savedValue;
-            }
-
-            else {
-                select.value='custom';
-                customInput.style.display='block';
-                customInput.required=true;
-                customInput.value=savedValue;
+                select.value = savedValue;
+            } else {
+                select.value = 'custom';
+                customInput.style.display = 'block';
+                customInput.required = true;
+                customInput.value = savedValue;
             }
         }
 
         // Handle Annotation Submit
-        form.addEventListener('submit', async (e)=> {
-                e.preventDefault();
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-                let userName=userNameSelect.value==='custom' ? userNameCustom.value.trim() : userNameSelect.value;
-                let deviceId=deviceIdSelect.value==='custom' ? deviceIdCustom.value.trim() : deviceIdSelect.value;
-                const eventId=document.getElementById('eventId').value;
-                const context=document.getElementById('context').value.trim();
+            let userName = userNameSelect.value === 'custom' ? userNameCustom.value.trim() : userNameSelect.value;
+            let deviceId = deviceIdSelect.value === 'custom' ? deviceIdCustom.value.trim() : deviceIdSelect.value;
+            const eventId = document.getElementById('eventId').value;
+            const context = document.getElementById('context').value.trim();
 
-                if ( !userName || !deviceId || !eventId) {
-                    showMessage('Please fill in all required fields', 'error');
-                    return;
-                }
+            if (!userName || !deviceId || !eventId) {
+                showMessage('Please fill in all required fields', 'error');
+                return;
+            }
 
-                localStorage.setItem('userName', userName);
-                localStorage.setItem('deviceId', deviceId);
+            localStorage.setItem('userName', userName);
+            localStorage.setItem('deviceId', deviceId);
 
-                submitBtn.disabled=true;
-                loadingText.textContent='Saving to Google Drive...';
-                loadingDiv.classList.add('show');
-                messageDiv.style.display='none';
+            submitBtn.disabled = true;
+            loadingText.textContent = 'Saving to Google Drive...';
+            loadingDiv.classList.add('show');
+            messageDiv.style.display = 'none';
 
-                try {
-
-                    // Using no-cors for simple submission
-                    await fetch(SCRIPT_URL, {
-
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-
-                        ,
-                        body: JSON.stringify({
-                            action: 'submit_annotation',
-                            userName, deviceId, eventId, context
-                        })
+            try {
+                // Using no-cors for simple submission
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'submit_annotation',
+                        userName, deviceId, eventId, context
+                    })
                 });
 
-            document.getElementById('eventId').value='';
-            document.getElementById('context').value='';
-            showMessage('✓ Data saved successfully!', 'success');
+                document.getElementById('eventId').value = '';
+                document.getElementById('context').value = '';
+                showMessage('✓ Data saved successfully!', 'success');
 
-        }
-
-        catch (error) {
-            console.error(error);
-            showMessage('✗ Failed to save data.', 'error');
-        }
-
-        finally {
-            submitBtn.disabled=false;
-            loadingDiv.classList.remove('show');
-        }
+            } catch (error) {
+                console.error(error);
+                showMessage('✗ Failed to save data.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                loadingDiv.classList.remove('show');
+            }
         });
 
         // Handle Device Health Check
         async function checkHealth() {
-            const deviceId=document.getElementById('healthDeviceId').value.trim();
-            const checkBtn=document.getElementById('checkHealthBtn');
-            const resultsDiv=document.getElementById('healthResults');
+            const deviceId = document.getElementById('healthDeviceId').value.trim();
+            const checkBtn = document.getElementById('checkHealthBtn');
+            const resultsDiv = document.getElementById('healthResults');
 
-            if ( !deviceId) {
+            if (!deviceId) {
                 showMessage('Please enter a Device ID', 'error');
                 return;
             }
 
             localStorage.setItem('healthDeviceId', deviceId);
 
-            checkBtn.disabled=true;
-            resultsDiv.style.display='none';
-            loadingText.textContent='Fetching device data...';
+            checkBtn.disabled = true;
+            resultsDiv.style.display = 'none';
+            loadingText.textContent = 'Fetching device data...';
             loadingDiv.classList.add('show');
-            messageDiv.style.display='none';
+            messageDiv.style.display = 'none';
 
             try {
-                // For fetching data we need a response, so we can't use no-cors if the server doesn't support CORS.
-                // Google Apps Script Web App needs to be deployed as "Anyone" (anonymous) to allow simple fetch,
-                // BUT browsers block CORS by default for Apps Script.
-                // The standard workaround is to use a redirect or JSONP, but standard fetch has issues.
-                // However, updated generic approach:
-                // We will attempt a standard fetch. If CORS fails, users verify deployment permissions.
-
-                const response=await fetch(SCRIPT_URL, {
-
+                const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    // mode: 'cors', // default
                     body: JSON.stringify({
                         action: 'get_device_health',
                         deviceId: deviceId
                     })
-            });
+                });
 
-        if ( !response.ok) throw new Error('Network response was not ok');
+                if (!response.ok) throw new Error('Network response was not ok');
 
-        const data=await response.json();
+                const data = await response.json();
 
-        if (data.success) {
-            displayHealthResults(data);
-        }
+                if (data.success) {
+                    displayHealthResults(data);
+                } else {
+                    showMessage('Error: ' + data.message, 'error');
+                }
 
-        else {
-            showMessage('Error: ' + data.message, 'error');
-        }
-
-        }
-
-        catch (error) {
-            console.error(error);
-            showMessage('Error fetching data. Ensure valid Device ID and internet connection. Note: CORS issues may occur if script is not deployed with "Anyone" access.', 'error');
-        }
-
-        finally {
-            checkBtn.disabled=false;
-            loadingDiv.classList.remove('show');
-        }
+            } catch (error) {
+                console.error(error);
+                showMessage('Error fetching data. Ensure valid Device ID and internet connection. Note: CORS issues may occur if script is not deployed with "Anyone" access.', 'error');
+            } finally {
+                checkBtn.disabled = false;
+                loadingDiv.classList.remove('show');
+            }
         }
 
         function displayHealthResults(data) {
-            document.getElementById('healthResults').style.display='block';
-            document.getElementById('tempValue').textContent=data.temperature;
-            document.getElementById('humValue').textContent=data.humidity;
+            document.getElementById('healthResults').style.display = 'block';
+            document.getElementById('tempValue').textContent = data.temperature;
+            document.getElementById('humValue').textContent = data.humidity;
 
             // Format time
-            const timeLabel=data.timeSource==='data' ? 'Data Timestamp': 'File Last Updated';
-            let timeString=data.lastUpdated;
-
+            const timeLabel = data.timeSource === 'data' ? 'Data Timestamp' : 'File Last Updated';
+            let timeString = data.lastUpdated;
             try {
-                // Try to format if it's a valid date string
-                const date=new Date(data.lastUpdated);
-
-                if ( !isNaN(date.getTime())) {
-                    timeString=date.toLocaleString();
+                const date = new Date(data.lastUpdated);
+                if (!isNaN(date.getTime())) {
+                    timeString = date.toLocaleString();
                 }
-            }
+            } catch (e) { }
 
-            catch (e) {}
-
-            document.getElementById('lastUpdatedTime').innerHTML=`<strong>$ {
-                timeLabel
-            }
-
-            :</strong>$ {
-                timeString
-            }
-
-            `;
+            document.getElementById('lastUpdatedTime').innerHTML = `<strong>${timeLabel}:</strong> ${timeString}`;
 
             renderChart(data.channels.labels, data.channels.values);
         }
 
         function renderChart(labels, values) {
-            const ctx=document.getElementById('channelsChart').getContext('2d');
+            const ctx = document.getElementById('channelsChart').getContext('2d');
 
             if (myChart) {
                 myChart.destroy();
             }
 
-            myChart=new Chart(ctx, {
-
+            myChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-
                     labels: labels,
-                    datasets: [ {
+                    datasets: [{
                         label: 'Sensor Channels',
                         data: values,
                         backgroundColor: '#00DE93',
                         borderColor: '#00a870',
                         borderWidth: 1,
                         borderRadius: 4
-                    }
-
-                    ]
-                }
-
-                ,
+                    }]
+                },
                 options: {
-
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
                         y: {
-
                             beginAtZero: true,
-                            grid: {
-                                color: '#f0f0f0'
-                            }
-                        }
-
-                        ,
+                            grid: { color: '#f0f0f0' }
+                        },
                         x: {
-                            grid: {
-                                display: false
-                            }
-
-                            ,
+                            grid: { display: false },
                             ticks: {
-
                                 maxRotation: 90,
                                 minRotation: 90,
-                                font: {
-                                    size: 10
-                                }
+                                font: { size: 10 }
                             }
                         }
-                    }
-
-                    ,
+                    },
                     plugins: {
-                        legend: {
-                            display: false
-                        }
+                        legend: { display: false }
                     }
                 }
             });
         }
 
         function showMessage(text, type) {
-            messageDiv.textContent=text;
-            messageDiv.className='message '+type;
-            messageDiv.style.display='block';
-
-            if (type==='success') {
-                setTimeout(()=> messageDiv.style.display='none', 5000);
+            messageDiv.textContent = text;
+            messageDiv.className = 'message ' + type;
+            messageDiv.style.display = 'block';
+            if (type === 'success') {
+                setTimeout(() => messageDiv.style.display = 'none', 5000);
             }
         }
+    </script>
+</body>
 
-        </script></body></html>
+</html>

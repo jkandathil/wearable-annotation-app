@@ -196,8 +196,13 @@
             }
         }
 
-        .required {
-            color: #e74c3c;
+        .container {
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
         }
 
         <select id="userName" name="userName" required><option value="">-- Select User --</option><option value="User1">User1</option><option value="User2">User2</option><option value="User3">User3</option><option value="User4">User4</option><option value="custom">Type custom...</option></select><input type="text" id="userNameCustom" name="userNameCustom" placeholder="Enter custom user name"

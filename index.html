@@ -677,64 +677,77 @@
             const lastSeen = new Date(data.lastUpdated);
             const now = new Date();
             const diffMs = now - lastSeen;
-            if (isNaN(diffMs)) {
-                timeText = 'unknown time';
-            } else if (diffMins < 60) {
-                timeText = `${diffMins} mins`;
-            } else if (diffMins < 1440) { // less than 24 hours
-                const hours = Math.floor(diffMins / 60);
-                timeText = `${hours} hour${hours > 1 ? 's' : ''}`;
+            const diffMins = Math.floor(diffMs / 60000);
+
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status-badge'; // reset
+
+            if (!isNaN(diffMs) && diffMins < 1) {
+                // Consider online if seen within last 1 minute
+                statusDiv.classList.add('status-online');
+                statusDiv.innerHTML = '🟢 Device is <strong>Online</strong>';
             } else {
-                const days = Math.floor(diffMins / 1440);
-                timeText = `${days} day${days > 1 ? 's' : ''}`;
+                statusDiv.classList.add('status-offline');
+
+                let timeText = '';
+                if (isNaN(diffMs)) {
+                    timeText = 'unknown time';
+                } else if (diffMins < 60) {
+                    timeText = `${diffMins} mins`;
+                } else if (diffMins < 1440) { // less than 24 hours
+                    const hours = Math.floor(diffMins / 60);
+                    timeText = `${hours} hour${hours > 1 ? 's' : ''}`;
+                } else {
+                    const days = Math.floor(diffMins / 1440);
+                    timeText = `${days} day${days > 1 ? 's' : ''}`;
+                }
+
+                statusDiv.innerHTML = `🔴 Device <strong>Offline</strong> (Last seen ${timeText} ago)`;
             }
 
-            statusDiv.innerHTML = `🔴 Device <strong>Offline</strong> (Last seen ${timeText} ago)`;
-        }
+            document.getElementById('tempValue').textContent = data.temperature;
+            document.getElementById('humValue').textContent = data.humidity;
 
-        document.getElementById('tempValue').textContent = data.temperature;
-        document.getElementById('humValue').textContent = data.humidity;
+            // Updated Battery Logic
+            const battVal = data.battery || 'N/A';
+            const battNum = parseFloat(battVal);
+            const battLevel = document.getElementById('batteryLevel');
+            const battText = document.getElementById('batteryValue');
 
-        // Updated Battery Logic
-        const battVal = data.battery || 'N/A';
-        const battNum = parseFloat(battVal);
-        const battLevel = document.getElementById('batteryLevel');
-        const battText = document.getElementById('batteryValue');
+            battText.textContent = battVal + (battVal !== 'N/A' && !battVal.toString().includes('%') ? '%' : '');
 
-        battText.textContent = battVal + (battVal !== 'N/A' && !battVal.toString().includes('%') ? '%' : '');
+            // Reset classes
+            battLevel.className = 'battery-level';
 
-        // Reset classes
-        battLevel.className = 'battery-level';
+            if (!isNaN(battNum)) {
+                // Ensure width is between 0 and 100
+                const width = Math.max(0, Math.min(100, battNum));
+                battLevel.style.width = width + '%';
 
-        if (!isNaN(battNum)) {
-            // Ensure width is between 0 and 100
-            const width = Math.max(0, Math.min(100, battNum));
-            battLevel.style.width = width + '%';
-
-            if (battNum < 20) {
-                battLevel.classList.add('red');
-            } else if (battNum <= 30) {
-                battLevel.classList.add('yellow');
+                if (battNum < 20) {
+                    battLevel.classList.add('red');
+                } else if (battNum <= 30) {
+                    battLevel.classList.add('yellow');
+                } else {
+                    battLevel.classList.add('green');
+                }
             } else {
-                battLevel.classList.add('green');
+                battLevel.style.width = '0%';
             }
-        } else {
-            battLevel.style.width = '0%';
-        }
 
-        // Format time
-        const timeLabel = data.timeSource === 'data' ? 'Data Timestamp' : 'File Last Updated';
-        let timeString = data.lastUpdated;
-        try {
-            const date = new Date(data.lastUpdated);
-            if (!isNaN(date.getTime())) {
-                timeString = date.toLocaleString();
-            }
-        } catch (e) { }
+            // Format time
+            const timeLabel = data.timeSource === 'data' ? 'Data Timestamp' : 'File Last Updated';
+            let timeString = data.lastUpdated;
+            try {
+                const date = new Date(data.lastUpdated);
+                if (!isNaN(date.getTime())) {
+                    timeString = date.toLocaleString();
+                }
+            } catch (e) { }
 
-        document.getElementById('lastUpdatedTime').innerHTML = `<strong>${timeLabel}:</strong> ${timeString}`;
+            document.getElementById('lastUpdatedTime').innerHTML = `<strong>${timeLabel}:</strong> ${timeString}`;
 
-        renderChart(data.channels.labels, data.channels.values);
+            renderChart(data.channels.labels, data.channels.values);
         }
 
         function renderChart(labels, values) {

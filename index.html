@@ -312,6 +312,21 @@
         img {
             image-rendering: -webkit-optimize-contrast;
         }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 600px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+        }
     </style>
 </head>
 

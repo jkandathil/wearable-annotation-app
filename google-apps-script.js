@@ -28,6 +28,8 @@ function doPost(e) {
     // Dispatch based on action
     if (data.action === 'get_device_health') {
       return handleGetDeviceHealth(data.deviceId);
+    } else if (data.action === 'get_offline_data') {
+      return handleGetOfflineData(data.deviceId);
     } else {
       // Default to submitting annotation
       return handleSubmitAnnotation(data);
@@ -53,45 +55,38 @@ function doGet(e) {
 }
 
 /**
- * Handle device health data retrieval
+ * Helper to find device file
  */
-function handleGetDeviceHealth(deviceId) {
-  if (!deviceId) {
-    return createJsonResponse({ success: false, message: 'Device ID is required' });
-  }
-
-  // Find the sensor data folder
+function findDeviceFile(deviceId) {
   const folders = DriveApp.getFoldersByName(SENSOR_DATA_FOLDER_NAME);
-  if (!folders.hasNext()) {
-    return createJsonResponse({ success: false, message: `Folder "${SENSOR_DATA_FOLDER_NAME}" not found` });
-  }
+  if (!folders.hasNext()) return null;
   const folder = folders.next();
 
-  // Search for files containing the Device ID
-  // We use searchFiles to find files that contain the deviceId in the name and are not trashed
   const query = `title contains '${deviceId}' and trashed = false`;
   const files = folder.searchFiles(query);
-
-  let targetFile = null;
-  // If multiple found, try to find exact match or just take the first one
-  // Prioritize exact match "deviceId.csv"
 
   const potentialFiles = [];
   while (files.hasNext()) {
     potentialFiles.push(files.next());
   }
 
-  if (potentialFiles.length === 0) {
-    return createJsonResponse({ success: false, message: `No files found matching Device ID "${deviceId}"` });
-  }
+  if (potentialFiles.length === 0) return null;
 
-  // sort by last updated to get the most recent file if duplicates?
-  // Or match exact name. Let's try to match exact name "DeviceID.csv" first.
-  targetFile = potentialFiles.find(f => f.getName() === `${deviceId}.csv`);
+  let targetFile = potentialFiles.find(f => f.getName() === `${deviceId}.csv`);
+  if (!targetFile) targetFile = potentialFiles[0];
 
+  return targetFile;
+}
+
+/**
+ * Handle device health data retrieval
+ */
+function handleGetDeviceHealth(deviceId) {
+  if (!deviceId) return createJsonResponse({ success: false, message: 'Device ID is required' });
+
+  const targetFile = findDeviceFile(deviceId);
   if (!targetFile) {
-    // If no exact match, use the first one found
-    targetFile = potentialFiles[0];
+    return createJsonResponse({ success: false, message: `No files found matching Device ID "${deviceId}"` });
   }
 
   // Read the file
@@ -155,6 +150,83 @@ function handleGetDeviceHealth(deviceId) {
   };
 
   return createJsonResponse(result);
+}
+
+/**
+ * Handle getting offline data for the last 12 hours
+ */
+function handleGetOfflineData(deviceId) {
+  if (!deviceId) return createJsonResponse({ success: false, message: 'Device ID is required' });
+
+  const targetFile = findDeviceFile(deviceId);
+  if (!targetFile) {
+    return createJsonResponse({ success: false, message: `No files found matching Device ID "${deviceId}"` });
+  }
+
+  const csvContent = targetFile.getBlob().getDataAsString();
+  const csvData = Utilities.parseCsv(csvContent);
+
+  if (csvData.length < 2) {
+    return createJsonResponse({ success: false, message: 'File is empty or has no data' });
+  }
+
+  const headers = csvData[0];
+  const timeIndex = headers.findIndex(h => h.match(/Timestamp|Time|Date|Created/i));
+
+  if (timeIndex === -1) {
+    return createJsonResponse({ success: false, message: 'Timestamp column not found in CSV' });
+  }
+
+  const now = new Date();
+  const cutoffTime = new Date(now.getTime() - 12 * 60 * 60 * 1000); // 12 hours ago
+
+  const validTimestamps = [];
+
+  // Parse rows (skip header)
+  for (let i = 1; i < csvData.length; i++) {
+    const row = csvData[i];
+    if (row[timeIndex]) {
+      // Trying to parse ISO or other formats
+      const ts = new Date(row[timeIndex]);
+      if (!isNaN(ts.getTime()) && ts >= cutoffTime) {
+        validTimestamps.push(ts.getTime());
+      }
+    }
+  }
+
+  validTimestamps.sort((a, b) => a - b);
+
+  // Calculate offline intervals (> 1 minute gaps)
+  const offlineIntervals = [];
+  const THRESHOLD_MS = 60 * 1000; // 1 minute
+
+  for (let i = 1; i < validTimestamps.length; i++) {
+    const diff = validTimestamps[i] - validTimestamps[i - 1];
+    if (diff > THRESHOLD_MS) {
+      offlineIntervals.push({
+        start: new Date(validTimestamps[i - 1]).toISOString(),
+        end: new Date(validTimestamps[i]).toISOString(),
+        durationMins: Math.round(diff / 60000)
+      });
+    }
+  }
+
+  // Also check gap between last data and now
+  const lastTs = validTimestamps[validTimestamps.length - 1];
+  if (lastTs && (now.getTime() - lastTs > THRESHOLD_MS)) {
+    offlineIntervals.push({
+      start: new Date(lastTs).toISOString(),
+      end: now.toISOString(),
+      durationMins: Math.round((now.getTime() - lastTs) / 60000),
+      isCurrent: true
+    });
+  }
+
+  return createJsonResponse({
+    success: true,
+    intervals: offlineIntervals,
+    dataPoints: validTimestamps.length
+  });
 }
 
 /**
@@ -243,4 +315,3 @@ function escapeCsvField(field) {
   }
   return field;
 }
-

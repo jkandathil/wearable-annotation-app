@@ -371,6 +371,7 @@
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('annotation')">Annotation</button>
             <button class="tab-btn" onclick="switchTab('health')">Device Health</button>
+            <button class="tab-btn" onclick="switchTab('offline')">Downtime</button>
         </div>
 
         <!-- Annotation Page -->
@@ -474,6 +475,24 @@
             </div>
         </div>
 
+        <!-- Offline Analysis Page -->
+        <div id="offlinePage" class="page" style="display: none;">
+            <h1>Offline Analysis</h1>
+            <p class="subtitle">Visualize device connectivity gaps (Last 12h)</p>
+
+            <div class="form-group">
+                <label for="offlineDeviceId">Device ID (SN) <span class="required">*</span></label>
+                <input type="text" id="offlineDeviceId" placeholder="Enter Device ID" class="full-width-input">
+            </div>
+
+            <button onclick="checkOffline()" class="submit-btn" id="checkOfflineBtn">Device offline Intervals</button>
+
+            <div class="chart-container" id="offlineChartContainer"
+                style="display: none; height: 300px; margin-top: 30px;">
+                <canvas id="offlineChart"></canvas>
+            </div>
+        </div>
+
         <div class="loading" id="loading">
             <div class="spinner"></div>
             <p style="margin-top: 10px; color: #666;" id="loadingText">Processing...</p>
@@ -484,6 +503,11 @@
 
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 
     <script>
         // IMPORTANT: Replace this URL with your Google Apps Script web app URL
@@ -495,6 +519,7 @@
         const loadingDiv = document.getElementById('loading');
         const loadingText = document.getElementById('loadingText');
         let myChart = null;
+        let offlineChart = null;
 
         // Tab Switching
         function switchTab(tabName) {
@@ -514,13 +539,21 @@
             document.getElementById(tabName + 'Page').classList.add('active');
 
             // Activate button
-            const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn =>
-                btn.textContent.toLowerCase().includes(tabName === 'annotation' ? 'annotation' : 'device health')
-            );
-            if (activeBtn) activeBtn.classList.add('active');
+            const buttons = document.querySelectorAll('.tab-btn');
+            if (tabName === 'annotation') buttons[0].classList.add('active');
+            else if (tabName === 'health') buttons[1].classList.add('active');
+            else if (tabName === 'offline') buttons[2].classList.add('active');
 
             // Clear messages
             messageDiv.style.display = 'none';
+
+            // Sync Device ID if moving to offline tab
+            if (tabName === 'offline') {
+                const savedId = localStorage.getItem('healthDeviceId') || localStorage.getItem('deviceId');
+                if (savedId) {
+                    document.getElementById('offlineDeviceId').value = savedId;
+                }
+            }
         }
 
         // Handle custom input fields (Annotation Page)
@@ -789,6 +822,169 @@
                     },
                     plugins: {
                         legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        async function checkOffline() {
+            const deviceIdInput = document.getElementById('offlineDeviceId');
+            const deviceId = deviceIdInput.value.trim();
+            const container = document.getElementById('offlineChartContainer');
+
+            if (!deviceId) {
+                showMessage('Please enter a Device ID', 'error');
+                return;
+            }
+
+            // Save mainly for syncing back
+            localStorage.setItem('healthDeviceId', deviceId);
+
+            loadingText.textContent = 'Analyzing offline history...';
+            loadingDiv.classList.add('show');
+            messageDiv.style.display = 'none';
+            container.style.display = 'none';
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'get_offline_data',
+                        deviceId: deviceId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    if (data.intervals.length === 0) {
+                        showMessage('No offline intervals found in the last 12 hours!', 'success');
+                    } else {
+                        renderOfflineChart(data.intervals);
+                        container.style.display = 'block';
+                    }
+                } else {
+                    showMessage('Error: ' + data.message, 'error');
+                }
+
+            } catch (error) {
+                console.error(error);
+                showMessage('Failed to fetch offline data.', 'error');
+            } finally {
+                loadingDiv.classList.remove('show');
+            }
+        }
+
+        function renderOfflineChart(intervals) {
+            const ctx = document.getElementById('offlineChart').getContext('2d');
+
+            if (offlineChart) {
+                offlineChart.destroy();
+            }
+
+            const now = new Date();
+            const val = now.getTime() - 12 * 60 * 60 * 1000;
+            const startTime = new Date(val);
+
+            // Prepare data for floating bars
+            // x: [start, end]
+            // y: 'Offline'
+
+            const chartData = intervals.map(i => {
+                return {
+                    x: [i.start, i.end],
+                    y: 'Offline'
+                };
+            });
+
+            // Register the datalabels plugin for this chart instance if not globally registered
+            // However, with CDN it's usually ChartDataLabels. 
+            // We need to register it in the plugins array of the chart config.
+
+            offlineChart = new Chart(ctx, {
+                type: 'bar',
+                plugins: [ChartDataLabels], // Register the plugin specifically for this chart
+                data: {
+                    labels: ['Offline'],
+                    datasets: [{
+                        label: 'Offline Intervals',
+                        data: chartData,
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        borderColor: 'rgb(255, 99, 132)',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        barThickness: 30 // Fixed thickness
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', // Horizontal bars
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'hour',
+                                displayFormats: {
+                                    hour: 'HH:mm'
+                                }
+                            },
+                            min: startTime.toISOString(),
+                            max: now.toISOString(),
+                            title: { display: true, text: 'Time (Last 12 Hours)' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            color: '#333', // Dark text for better visibility on light red? Or keep white? 
+                            // Background is 0.5 opacity red (pinkish), white might be hard to read. Dark grey is safer.
+                            font: {
+                                weight: 'bold',
+                                size: 11
+                            },
+                            formatter: function (value, context) {
+                                const start = new Date(value.x[0]);
+                                const end = new Date(value.x[1]);
+                                return start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) +
+                                    ' - ' +
+                                    end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            },
+                            display: 'auto', // Only show if it fits (perfect for zooming)
+                            anchor: 'center',
+                            align: 'center',
+                            clip: true
+                        },
+                        zoom: {
+                            limits: {
+                                x: {
+                                    min: startTime.getTime(),
+                                    max: now.getTime(),
+                                    minRange: 60 * 1000 // Limit zoom to 1 minute
+                                }
+                            },
+                            zoom: {
+                                wheel: { enabled: true },
+                                pinch: { enabled: true },
+                                mode: 'x'
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'x'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const raw = context.raw;
+                                    const start = new Date(raw.x[0]);
+                                    const end = new Date(raw.x[1]);
+                                    const duration = Math.round((end - start) / 60000); // Minutes
+                                    // Show full precision in tooltip
+                                    return `Offline: ${start.toLocaleTimeString()} - ${end.toLocaleTimeString()} (${duration} mins)`;
+                                }
+                            }
+                        }
                     }
                 }
             });

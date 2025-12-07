@@ -112,6 +112,7 @@ function handleGetDeviceHealth(deviceId) {
   // Flexible matching for Temperature/Temp and Humidity/Hum
   const tempIndex = headers.findIndex(h => h.match(/Temperature|Temp/i));
   const humIndex = headers.findIndex(h => h.match(/Humidity|Hum/i));
+  const batteryIndex = headers.findIndex(h => h.match(/Bat\(%\)|Bat%|Battery|Batt|Charge|Voltage/i));
 
   // Find Timestamp column
   const timeIndex = headers.findIndex(h => h.match(/Timestamp|Time|Date|Created/i));
@@ -146,6 +147,7 @@ function handleGetDeviceHealth(deviceId) {
     timeSource: timeSource,
     temperature: tempIndex !== -1 ? lastRow[tempIndex] : 'N/A',
     humidity: humIndex !== -1 ? lastRow[humIndex] : 'N/A',
+    battery: batteryIndex !== -1 ? lastRow[batteryIndex] : 'N/A',
     channels: {
       labels: channelLabels,
       values: channelValues

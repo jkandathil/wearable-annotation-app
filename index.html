@@ -211,7 +211,7 @@
         /* Metrics Grid */
         .metrics-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(3, 1fr);
             gap: 15px;
             margin-bottom: 25px;
         }
@@ -255,6 +255,57 @@
 
         .full-width-input {
             width: 100%;
+        }
+
+        /* Battery Icon */
+        .battery-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .battery-icon {
+            width: 35px;
+            height: 18px;
+            border: 2px solid #555;
+            border-radius: 4px;
+            position: relative;
+            padding: 2px;
+            display: flex;
+            align-items: center;
+        }
+
+        .battery-icon::after {
+            content: '';
+            position: absolute;
+            right: -5px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 8px;
+            background: #555;
+            border-radius: 0 2px 2px 0;
+        }
+
+        .battery-level {
+            height: 100%;
+            background: #00DE93;
+            border-radius: 2px;
+            width: 0%;
+            transition: all 0.5s ease;
+        }
+
+        .battery-level.red {
+            background-color: #ff4d4d;
+        }
+
+        .battery-level.yellow {
+            background-color: #ffc107;
+        }
+
+        .battery-level.green {
+            background-color: #00DE93;
         }
 
         /* Fix for pixelated images */
@@ -353,6 +404,15 @@
                     <div class="metric-card">
                         <span class="metric-label">Humidity</span>
                         <span class="metric-value" id="humValue">--</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Battery</span>
+                        <div class="battery-container">
+                            <div class="battery-icon">
+                                <div class="battery-level" id="batteryLevel"></div>
+                            </div>
+                            <span class="metric-value" id="batteryValue">--</span>
+                        </div>
                     </div>
                 </div>
 
@@ -563,6 +623,33 @@
             document.getElementById('healthResults').style.display = 'block';
             document.getElementById('tempValue').textContent = data.temperature;
             document.getElementById('humValue').textContent = data.humidity;
+
+            // Updated Battery Logic
+            const battVal = data.battery || 'N/A';
+            const battNum = parseFloat(battVal);
+            const battLevel = document.getElementById('batteryLevel');
+            const battText = document.getElementById('batteryValue');
+
+            battText.textContent = battVal + (battVal !== 'N/A' && !battVal.toString().includes('%') ? '%' : '');
+
+            // Reset classes
+            battLevel.className = 'battery-level';
+
+            if (!isNaN(battNum)) {
+                // Ensure width is between 0 and 100
+                const width = Math.max(0, Math.min(100, battNum));
+                battLevel.style.width = width + '%';
+
+                if (battNum < 20) {
+                    battLevel.classList.add('red');
+                } else if (battNum <= 30) {
+                    battLevel.classList.add('yellow');
+                } else {
+                    battLevel.classList.add('green');
+                }
+            } else {
+                battLevel.style.width = '0%';
+            }
 
             // Format time
             const timeLabel = data.timeSource === 'data' ? 'Data Timestamp' : 'File Last Updated';

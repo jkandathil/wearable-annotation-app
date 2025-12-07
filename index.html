@@ -313,6 +313,30 @@
             image-rendering: -webkit-optimize-contrast;
         }
 
+        /* Status Badge */
+        .status-badge {
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 15px;
+            display: none;
+            /* Hidden by default */
+        }
+
+        .status-online {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-offline {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
         /* Mobile Responsiveness */
         @media (max-width: 600px) {
             body {
@@ -420,6 +444,8 @@
 
             <!-- Results Section -->
             <div id="healthResults" style="display: none; margin-top: 30px;">
+                <div id="deviceStatus" class="status-badge"></div>
+
                 <div class="metrics-grid">
                     <div class="metric-card">
                         <span class="metric-label">Temperature</span>
@@ -645,6 +671,40 @@
 
         function displayHealthResults(data) {
             document.getElementById('healthResults').style.display = 'block';
+
+            // Status Logic
+            const statusDiv = document.getElementById('deviceStatus');
+            const lastSeen = new Date(data.lastUpdated);
+            const now = new Date();
+            const diffMs = now - lastSeen;
+            const diffMins = Math.floor(diffMs / 60000);
+
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status-badge'; // reset
+
+            if (!isNaN(diffMs) && diffMins < 10) {
+                // Consider online if seen within last 10 minutes
+                statusDiv.classList.add('status-online');
+                statusDiv.innerHTML = '🟢 Device is <strong>Online</strong>';
+            } else {
+                statusDiv.classList.add('status-offline');
+
+                let timeText = '';
+                if (isNaN(diffMs)) {
+                    timeText = 'unknown time';
+                } else if (diffMins < 60) {
+                    timeText = `${diffMins} mins`;
+                } else if (diffMins < 1440) { // less than 24 hours
+                    const hours = Math.floor(diffMins / 60);
+                    timeText = `${hours} hour${hours > 1 ? 's' : ''}`;
+                } else {
+                    const days = Math.floor(diffMins / 1440);
+                    timeText = `${days} day${days > 1 ? 's' : ''}`;
+                }
+
+                statusDiv.innerHTML = `🔴 Device <strong>Offline</strong> (Last seen ${timeText} ago)`;
+            }
+
             document.getElementById('tempValue').textContent = data.temperature;
             document.getElementById('humValue').textContent = data.humidity;
 

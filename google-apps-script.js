@@ -14,6 +14,7 @@
  */
 
 // Configuration
+const VERSION = '1.0.1'; // Increment this to verify deployment
 const ANNOTATION_FOLDER_NAME = 'Wearable_deepskin_context'; // Folder for annotations
 const SENSOR_DATA_FOLDER_NAME = 'Wearable sensor data';     // Folder for device data
 
@@ -67,15 +68,31 @@ function findDeviceFile(deviceId) {
 
   const potentialFiles = [];
   while (files.hasNext()) {
-    potentialFiles.push(files.next());
+    const f = files.next();
+    // Prioritize Google Sheets
+    if (f.getMimeType() === MimeType.GOOGLE_SHEETS) {
+      potentialFiles.push(f);
+    }
   }
 
   if (potentialFiles.length === 0) return null;
 
-  let targetFile = potentialFiles.find(f => f.getName() === `${deviceId}.csv`);
+  let targetFile = potentialFiles.find(f => f.getName() === deviceId);
   if (!targetFile) targetFile = potentialFiles[0];
 
   return targetFile;
+}
+
+/**
+ * Helper to read data from file (Sheet or CSV)
+ */
+function readDataFromFile(file) {
+  if (file.getMimeType() === MimeType.GOOGLE_SHEETS) {
+    return SpreadsheetApp.open(file).getSheets()[0].getDataRange().getValues();
+  } else {
+    // Fallback for CSV
+    return Utilities.parseCsv(file.getBlob().getDataAsString());
+  }
 }
 
 /**
@@ -90,8 +107,8 @@ function handleGetDeviceHealth(deviceId) {
   }
 
   // Read the file
-  const csvContent = targetFile.getBlob().getDataAsString();
-  const csvData = Utilities.parseCsv(csvContent);
+  // Read the file
+  const csvData = readDataFromFile(targetFile);
 
   if (csvData.length < 2) {
     return createJsonResponse({ success: false, message: 'File is empty or has no data' });
@@ -137,6 +154,7 @@ function handleGetDeviceHealth(deviceId) {
 
   const result = {
     success: true,
+    version: VERSION,
     fileName: targetFile.getName(),
     lastUpdated: displayTime, // Sending data time if available
     timeSource: timeSource,
@@ -163,8 +181,7 @@ function handleGetOfflineData(deviceId) {
     return createJsonResponse({ success: false, message: `No files found matching Device ID "${deviceId}"` });
   }
 
-  const csvContent = targetFile.getBlob().getDataAsString();
-  const csvData = Utilities.parseCsv(csvContent);
+  const csvData = readDataFromFile(targetFile);
 
   if (csvData.length < 2) {
     return createJsonResponse({ success: false, message: 'File is empty or has no data' });

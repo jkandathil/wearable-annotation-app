@@ -512,8 +512,7 @@
 
     <script>
         // IMPORTANT: Replace this URL with your Google Apps Script web app URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby2JCBRfyjOBwUSW5I-mFgLWib9LVo4tEotnt28V_Pq-TWb38MLHYUPusI4pRNAcFhA9g/exec';
-
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwa4mxOcwefg8e0jyodmcbiybL039VB3V_fIEoRrg8vLTibMum6RnUBYAB8m_GWpVDsRQ/exec';
         const form = document.getElementById('annotationForm');
         const submitBtn = document.getElementById('submitBtn');
         const messageDiv = document.getElementById('message');
@@ -684,19 +683,31 @@
                     })
                 });
 
-                if (!response.ok) throw new Error('Network response was not ok');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
-                const data = await response.json();
+                const text = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    throw new Error('Server returned non-JSON response: ' + text.substring(0, 100) + '...');
+                }
 
                 if (data.success) {
                     displayHealthResults(data);
                 } else {
-                    showMessage('Error: ' + data.message, 'error');
+                    showMessage('Script Message: ' + data.message, 'error');
                 }
 
             } catch (error) {
                 console.error(error);
-                showMessage('Error fetching data. Ensure valid Device ID and internet connection. Note: CORS issues may occur if script is not deployed with "Anyone" access.', 'error');
+                let errorMsg = 'Error: ' + error.message;
+                if (error.message.includes('Failed to fetch')) {
+                    errorMsg += '<br>Possible CORS/Network issue.';
+                }
+                showMessage(errorMsg, 'error');
             } finally {
                 checkBtn.disabled = false;
                 loadingDiv.classList.remove('show');

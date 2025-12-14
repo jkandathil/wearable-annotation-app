@@ -6,21 +6,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Deepskin</title>
     <link rel="icon" type="image/png" href="logo_noze_fixed.png">
+    <!-- Google Fonts & Icons -->
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" />
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=material-symbols-rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <style>
         :root {
             --primary-color: #00DE93;
-            --primary-hover: #00bd7e;
-            --bg-color: #f5f5f5;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --border-radius: 8px;
+            --primary-dark: #00b074;
+            --bg-gradient: linear-gradient(135deg, #e0f7fa 0%, #ffffff 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-main: #1f2937;
+            --text-secondary: #6b7280;
+            --border-radius: 16px;
+            --shadow-lg: 0 10px 40px -10px rgba(0, 0, 0, 0.1);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
         }
 
         body {
@@ -30,22 +39,35 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
+            color: var(--text-main);
         }
 
         .container {
             background-color: var(--card-bg);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 0;
+            /* padding handled by children */
+            border-radius: 24px;
+            box-shadow: var(--shadow-lg);
             width: 100%;
-            max-width: 500px;
+            max-width: 440px;
+            /* Slightly narrower for mobile-app feel */
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+            /* For status bar radius */
+        }
+
+        .content-padding {
+            padding: 30px;
         }
 
         .logo {
             display: block;
-            margin: 0 auto 20px;
-            max-width: 150px;
+            margin: 10px auto 0;
+            /* Centered gap: 30px above, 30px below */
+            max-width: 80px;
+            /* Slightly Increased Size */
             height: auto;
+            border-radius: 12px;
         }
 
         h1 {
@@ -82,21 +104,23 @@
         input,
         textarea {
             width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 15px;
-            transition: all 0.3s ease;
-            font-family: inherit;
-            background-color: white;
+            padding: 14px 16px;
+            border: 1px solid transparent;
+            background-color: #f3f4f6;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            color: var(--text-main);
+            font-weight: 500;
         }
 
         select:focus,
         input:focus,
         textarea:focus {
             outline: none;
+            background-color: white;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(0, 222, 147, 0.1);
+            box-shadow: 0 0 0 4px rgba(0, 222, 147, 0.15);
         }
 
         textarea {
@@ -185,28 +209,31 @@
         /* Tabs */
         .tabs {
             display: flex;
-            margin-bottom: 30px;
-            background: #f0f0f0;
-            padding: 5px;
-            border-radius: 12px;
+            margin: 0 20px 20px 20px;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 14px;
+            position: relative;
         }
 
         .tab-btn {
             flex: 1;
-            padding: 12px;
+            padding: 8px 12px;
             border: none;
             background: transparent;
-            color: #666;
+            color: var(--text-secondary);
             font-weight: 600;
+            font-size: 13px;
             border-radius: 10px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            z-index: 1;
         }
 
         .tab-btn.active {
             background: white;
-            color: #00DE93;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            color: var(--text-main);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
         /* Metrics Grid */
@@ -338,6 +365,89 @@
             border: 1px solid #f5c6cb;
         }
 
+        /* Status Bar (Mobile-like) */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: #ffffff;
+            /* Cleaner white breakdown */
+            margin: 0;
+            border-bottom: 1px solid #f0f0f0;
+            color: var(--text-main);
+        }
+
+        .status-left {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .status-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 500;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .status-icon {
+            font-size: 18px !important;
+            color: #666;
+            vertical-align: middle;
+        }
+
+        /* Compact Battery */
+        .battery-icon-small {
+            width: 24px;
+            height: 12px;
+            border: 1.5px solid #555;
+            border-radius: 2px;
+            position: relative;
+            padding: 1px;
+            display: flex;
+            align-items: center;
+        }
+
+        .battery-icon-small::after {
+            content: '';
+            position: absolute;
+            right: -3px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 2px;
+            height: 4px;
+            background: #555;
+            border-radius: 0 1px 1px 0;
+        }
+
+        .battery-level-small {
+            height: 100%;
+            background: #00DE93;
+            border-radius: 1px;
+            width: 0%;
+            transition: all 0.5s ease;
+        }
+
+        .battery-level-small.red {
+            background-color: #ff4d4d;
+        }
+
+        .battery-level-small.yellow {
+            background-color: #ffc107;
+        }
+
+        .battery-level-small.green {
+            background-color: #00DE93;
+        }
+
         /* Mobile Responsiveness */
         @media (max-width: 600px) {
             body {
@@ -361,145 +471,221 @@
                 font-size: 14px;
             }
         }
+
+
+
+        /* Toggle Buttons */
+        .toggle-btn {
+            border: none;
+            background: transparent;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-btn.active {
+            background-color: white;
+            color: #00DE93;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <img src="logo_noze_fixed.png" alt="Logo" class="logo">
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span id="clockTime">--:--</span>
+            </div>
+            <div class="status-right">
+                <div class="status-item" title="Temperature">
+                    <span id="tempValue">-- ºC</span>
+                </div>
+                <div class="status-item" title="Humidity">
+                    <span id="humValue">-- %</span>
+                </div>
+                <div class="status-item" title="Battery">
+                    <div class="battery-icon-small">
+                        <div class="battery-level-small" id="batteryLevel"></div>
+                    </div>
+                    <span id="batteryValue">--</span>
+                </div>
+            </div>
+        </div>
 
         <!-- Navigation Tabs -->
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('annotation')">Annotation</button>
-            <button class="tab-btn" onclick="switchTab('health')">Device Health</button>
+            <button class="tab-btn active" onclick="switchTab('annotation')">Annotate</button>
+            <button class="tab-btn" onclick="switchTab('health')">Health</button>
             <button class="tab-btn" onclick="switchTab('offline')">Downtime</button>
+            <button class="tab-btn" onclick="switchTab('env')">Env</button>
+            <button class="tab-btn" onclick="switchTab('battery')">Battery</button>
         </div>
 
-        <!-- Annotation Page -->
-        <div id="annotationPage" class="page active">
-            <h1>Deepskin</h1>
-            <p class="subtitle">Submit your annotations to Google Drive</p>
+        <img src="logo_noze_fixed.png" alt="Logo" class="logo">
 
-            <form id="annotationForm">
-                <div class="form-group">
-                    <label for="userName">User Name <span class="required">*</span></label>
-                    <select id="userName" name="userName" required>
-                        <option value="">-- Select User --</option>
-                        <option value="User1">User1</option>
-                        <option value="User2">User2</option>
-                        <option value="User3">User3</option>
-                        <option value="User4">User4</option>
-                        <option value="custom">Type custom...</option>
-                    </select>
-                    <input type="text" id="userNameCustom" name="userNameCustom" placeholder="Enter custom user name"
-                        style="display: none; margin-top: 10px;">
-                </div>
+        <div class="content-padding">
 
-                <div class="form-group">
-                    <label for="deviceId">Device ID <span class="required">*</span></label>
-                    <select id="deviceId" name="deviceId" required>
-                        <option value="">-- Select Device --</option>
-                        <option value="Device1">Device1</option>
-                        <option value="Device2">Device2</option>
-                        <option value="Device3">Device3</option>
-                        <option value="Device4">Device4</option>
-                        <option value="custom">Type custom...</option>
-                    </select>
-                    <input type="text" id="deviceIdCustom" name="deviceIdCustom" placeholder="Enter custom device ID"
-                        style="display: none; margin-top: 10px;">
-                </div>
+            <!-- Annotation Page -->
+            <div id="annotationPage" class="page active">
+                <h1>Deepskin</h1>
+                <p class="subtitle">Submit your annotations to Google Drive</p>
 
-                <div class="form-group">
-                    <label for="eventId">Event ID <span class="required">*</span></label>
-                    <select id="eventId" name="eventId" required>
-                        <option value="">-- Select Event --</option>
-                        <option value="Event A">Event A</option>
-                        <option value="Event B">Event B</option>
-                        <option value="Event C">Event C</option>
-                        <option value="Event D">Event D</option>
-                        <option value="Event E">Event E</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="context">Context</label>
-                    <textarea id="context" name="context"
-                        placeholder="Enter your annotation or context information here (optional)..."></textarea>
-                </div>
-
-                <button type="submit" class="submit-btn" id="submitBtn">Submit</button>
-            </form>
-        </div>
-
-        <!-- Device Health Page -->
-        <div id="healthPage" class="page" style="display: none;">
-            <h1>Device Health</h1>
-            <p class="subtitle">Check latest sensor status</p>
-
-            <div class="form-group">
-                <label for="healthDeviceId">Sensor-sn <span class="required">*</span></label>
-                <input type="text" id="healthDeviceId" placeholder="Enter Device ID (e.g. 0000000223-3324-smd-nz)"
-                    class="full-width-input">
-            </div>
-
-            <button onclick="checkHealth()" class="submit-btn" id="checkHealthBtn">Check Health</button>
-
-            <!-- Results Section -->
-            <div id="healthResults" style="display: none; margin-top: 30px;">
-                <div id="deviceStatus" class="status-badge"></div>
-
-                <div class="metrics-grid">
-                    <div class="metric-card">
-                        <span class="metric-label">Temperature</span>
-                        <span class="metric-value" id="tempValue">--</span>
+                <form id="annotationForm">
+                    <div class="form-group">
+                        <label for="userName">User Name <span class="required">*</span></label>
+                        <select id="userName" name="userName" required>
+                            <option value="">-- Select User --</option>
+                            <option value="User1">User1</option>
+                            <option value="User2">User2</option>
+                            <option value="User3">User3</option>
+                            <option value="User4">User4</option>
+                            <option value="custom">Type custom...</option>
+                        </select>
+                        <input type="text" id="userNameCustom" name="userNameCustom"
+                            placeholder="Enter custom user name" style="display: none; margin-top: 10px;">
                     </div>
-                    <div class="metric-card">
-                        <span class="metric-label">Humidity</span>
-                        <span class="metric-value" id="humValue">--</span>
+
+                    <div class="form-group">
+                        <label for="deviceId">Device ID <span class="required">*</span></label>
+                        <select id="deviceId" name="deviceId" required>
+                            <option value="">-- Select Device --</option>
+                            <option value="Device1">Device1</option>
+                            <option value="Device2">Device2</option>
+                            <option value="Device3">Device3</option>
+                            <option value="Device4">Device4</option>
+                            <option value="custom">Type custom...</option>
+                        </select>
+                        <input type="text" id="deviceIdCustom" name="deviceIdCustom"
+                            placeholder="Enter custom device ID" style="display: none; margin-top: 10px;">
                     </div>
-                    <div class="metric-card">
-                        <span class="metric-label">Battery</span>
-                        <div class="battery-container">
-                            <div class="battery-icon">
-                                <div class="battery-level" id="batteryLevel"></div>
-                            </div>
-                            <span class="metric-value" id="batteryValue">--</span>
-                        </div>
+
+                    <div class="form-group">
+                        <label for="eventId">Event ID <span class="required">*</span></label>
+                        <select id="eventId" name="eventId" required>
+                            <option value="">-- Select Event --</option>
+                            <option value="Event A">Event A</option>
+                            <option value="Event B">Event B</option>
+                            <option value="Event C">Event C</option>
+                            <option value="Event D">Event D</option>
+                            <option value="Event E">Event E</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="context">Context</label>
+                        <textarea id="context" name="context"
+                            placeholder="Enter your annotation or context information here (optional)..."></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">Submit</button>
+                </form>
+            </div>
+
+            <!-- Device Health Page -->
+            <div id="healthPage" class="page" style="display: none;">
+                <h1>Device Health</h1>
+                <p class="subtitle">Check latest sensor status</p>
+
+                <div class="form-group">
+                    <label for="healthDeviceId">Sensor-sn <span class="required">*</span></label>
+                    <input type="text" id="healthDeviceId" placeholder="Enter Device ID (e.g. 0000000223-3324-smd-nz)"
+                        class="full-width-input">
+                </div>
+
+                <button onclick="checkHealth()" class="submit-btn" id="checkHealthBtn">Check Health</button>
+
+                <!-- Results Section -->
+                <div id="healthResults" style="display: none; margin-top: 30px;">
+                    <div id="deviceStatus" class="status-badge"></div>
+
+                    <!-- Metrics moved to Top Status Bar -->
+
+                    <div class="chart-container">
+                        <canvas id="channelsChart"></canvas>
+                    </div>
+
+                    <p class="last-updated">Last Updated: <span id="lastUpdatedTime">--</span></p>
+                </div>
+            </div>
+
+            <!-- Offline Analysis Page -->
+            <div id="offlinePage" class="page" style="display: none;">
+                <h1>Device Offline Events</h1>
+                <p class="subtitle">Visualize device connectivity gaps (Last 12h)</p>
+
+                <div class="form-group">
+                    <label for="offlineDeviceId">Sensor-sn <span class="required">*</span></label>
+                    <input type="text" id="offlineDeviceId" placeholder="Enter Device ID" class="full-width-input">
+                </div>
+
+                <button onclick="checkOffline()" class="submit-btn" id="checkOfflineBtn">Device offline
+                    Intervals</button>
+
+                <div class="chart-container" id="offlineChartContainer"
+                    style="display: none; height: 300px; margin-top: 30px;">
+                    <canvas id="offlineChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Environmental Page -->
+            <div id="envPage" class="page" style="display: none;">
+                <h1>Environment History</h1>
+                <p class="subtitle">Temperature, Humidity & GASR0 (Last 3 Hours)</p>
+
+                <div class="form-group">
+                    <label for="envDeviceId">Sensor-sn <span class="required">*</span></label>
+                    <input type="text" id="envDeviceId" placeholder="Enter Device ID" class="full-width-input">
+                </div>
+
+                <button onclick="checkEnvHistory()" class="submit-btn" id="checkEnvBtn">Plot History</button>
+
+                <!-- Chart Toggle Switch -->
+                <div id="envChartToggle" style="display: none; margin-top: 20px; text-align: center;">
+                    <div class="toggle-container"
+                        style="display: inline-flex; background: #e0e0e0; border-radius: 25px; padding: 4px;">
+                        <button class="toggle-btn active" id="btnTempHum" onclick="switchEnvChart('temphum')">Temp /
+                            Humidity</button>
+                        <button class="toggle-btn" id="btnGas" onclick="switchEnvChart('gas')">GASR0</button>
                     </div>
                 </div>
 
-                <div class="chart-container">
-                    <canvas id="channelsChart"></canvas>
+                <div class="chart-container" id="envChartContainer"
+                    style="display: none; height: 350px; margin-top: 30px;">
+                    <canvas id="envChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Battery History Page -->
+            <div id="batteryPage" class="page" style="display: none;">
+                <h1>Battery History</h1>
+                <p class="subtitle">Battery Level & Discharge Rate (Last 3 Hours)</p>
+
+                <div class="form-group">
+                    <label for="battDeviceId">Sensor-sn <span class="required">*</span></label>
+                    <input type="text" id="battDeviceId" placeholder="Enter Device ID" class="full-width-input">
                 </div>
 
-                <p class="last-updated">Last Updated: <span id="lastUpdatedTime">--</span></p>
-            </div>
-        </div>
+                <button onclick="checkBatteryHistory()" class="submit-btn" id="checkBattBtn">Plot Battery</button>
 
-        <!-- Offline Analysis Page -->
-        <div id="offlinePage" class="page" style="display: none;">
-            <h1>Device Offline Events</h1>
-            <p class="subtitle">Visualize device connectivity gaps (Last 12h)</p>
-
-            <div class="form-group">
-                <label for="offlineDeviceId">Sensor-sn <span class="required">*</span></label>
-                <input type="text" id="offlineDeviceId" placeholder="Enter Device ID" class="full-width-input">
+                <div class="chart-container" id="battChartContainer"
+                    style="display: none; height: 350px; margin-top: 30px;">
+                    <canvas id="battChart"></canvas>
+                </div>
             </div>
 
-            <button onclick="checkOffline()" class="submit-btn" id="checkOfflineBtn">Device offline Intervals</button>
-
-            <div class="chart-container" id="offlineChartContainer"
-                style="display: none; height: 300px; margin-top: 30px;">
-                <canvas id="offlineChart"></canvas>
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 10px; color: #666;" id="loadingText">Processing...</p>
             </div>
-        </div>
 
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p style="margin-top: 10px; color: #666;" id="loadingText">Processing...</p>
-        </div>
-
-        <div class="message" id="message"></div>
+            <div class="message" id="message"></div>
+        </div> <!-- End content-padding -->
     </div>
 
     <!-- Chart.js CDN -->
@@ -520,39 +706,72 @@
         const loadingText = document.getElementById('loadingText');
         let myChart = null;
         let offlineChart = null;
+        let envChart = null;
+        let battChart = null;
 
-        // Tab Switching
+        // Clock Function
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const clockEl = document.getElementById('clockTime');
+            if (clockEl) clockEl.textContent = timeString;
+        }
+        setInterval(updateClock, 1000);
+        updateClock(); // Initial call
+
+        // Tab Switching Logic
         function switchTab(tabName) {
             // Hide all pages
-            document.querySelectorAll('.page').forEach(el => {
-                el.style.display = 'none';
-                el.classList.remove('active');
+            document.querySelectorAll('.page').forEach(page => {
+                page.style.display = 'none';
+                page.classList.remove('active');
             });
 
-            // Deactivate all buttons
+            // Deactivate all tabs
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
 
             // Show selected page
-            document.getElementById(tabName + 'Page').style.display = 'block';
-            document.getElementById(tabName + 'Page').classList.add('active');
+            const pageMap = {
+                'annotation': 'annotationPage',
+                'health': 'healthPage',
+                'offline': 'offlinePage',
+                'env': 'envPage',
+                'battery': 'batteryPage'
+            };
 
-            // Activate button
-            const buttons = document.querySelectorAll('.tab-btn');
-            if (tabName === 'annotation') buttons[0].classList.add('active');
-            else if (tabName === 'health') buttons[1].classList.add('active');
-            else if (tabName === 'offline') buttons[2].classList.add('active');
+            const selectedPageId = pageMap[tabName];
+            if (selectedPageId) {
+                const page = document.getElementById(selectedPageId);
+                page.style.display = 'block';
+                setTimeout(() => page.classList.add('active'), 10);
+            }
+
+            // Activate tab button
+            const tabIndexMap = {
+                'annotation': 0,
+                'health': 1,
+                'offline': 2,
+                'env': 3,
+                'battery': 4
+            };
+
+            const btnIndex = tabIndexMap[tabName];
+            if (btnIndex !== undefined) {
+                document.querySelectorAll('.tab-btn')[btnIndex].classList.add('active');
+            }
 
             // Clear messages
             messageDiv.style.display = 'none';
 
-            // Sync Device ID if moving to offline tab
-            if (tabName === 'offline') {
-                const savedId = localStorage.getItem('healthDeviceId') || localStorage.getItem('deviceId');
-                if (savedId) {
-                    document.getElementById('offlineDeviceId').value = savedId;
-                }
+            // Sync Device ID if moving to offline tab or env tab
+            const savedId = localStorage.getItem('healthDeviceId') || localStorage.getItem('deviceId');
+
+            if (tabName === 'offline' && savedId) {
+                document.getElementById('offlineDeviceId').value = savedId;
+            } else if (tabName === 'env' && savedId) {
+                document.getElementById('envDeviceId').value = savedId;
             }
         }
 
@@ -750,8 +969,8 @@
                 statusDiv.innerHTML = `🔴 Device <strong>Offline</strong> (Last seen ${timeText} ago)`;
             }
 
-            document.getElementById('tempValue').textContent = data.temperature;
-            document.getElementById('humValue').textContent = data.humidity;
+            document.getElementById('tempValue').textContent = Math.round(parseFloat(data.temperature || 0)) + ' ºC';
+            document.getElementById('humValue').textContent = Math.round(parseFloat(data.humidity || 0)) + ' %';
 
             // Updated Battery Logic
             const battVal = data.battery || 'N/A';
@@ -761,8 +980,8 @@
 
             battText.textContent = battVal + (battVal !== 'N/A' && !battVal.toString().includes('%') ? '%' : '');
 
-            // Reset classes
-            battLevel.className = 'battery-level';
+            // Reset classes for status bar battery
+            battLevel.className = 'battery-level-small';
 
             if (!isNaN(battNum)) {
                 // Ensure width is between 0 and 100
@@ -995,6 +1214,322 @@
                                     // Show full precision in tooltip
                                     return `Offline: ${start.toLocaleTimeString()} - ${end.toLocaleTimeString()} (${duration} mins)`;
                                 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function checkEnvHistory() {
+            const deviceIdInput = document.getElementById('envDeviceId');
+            const deviceId = deviceIdInput.value.trim();
+            const container = document.getElementById('envChartContainer');
+            const navButtons = document.getElementById('envChartToggle');
+
+
+
+            if (!deviceId) {
+                showMessage('Please enter a Device ID', 'error');
+                return;
+            }
+
+            localStorage.setItem('healthDeviceId', deviceId);
+
+            loadingText.textContent = 'Fetching environmental data...';
+            loadingDiv.classList.add('show');
+            messageDiv.style.display = 'none';
+            container.style.display = 'none';
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'get_env_history',
+                        deviceId: deviceId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    if (data.timestamps.length === 0) {
+                        showMessage('No data found for this device.', 'error');
+                    } else {
+                        // Store data globally for switching
+                        currentEnvData = data;
+                        document.getElementById('envChartToggle').style.display = 'block';
+
+                        // Default to Temp/Hum
+                        switchEnvChart('temphum');
+                        container.style.display = 'block';
+                    }
+                } else {
+                    showMessage('Error: ' + data.message, 'error');
+                }
+
+            } catch (error) {
+                console.error(error);
+                showMessage('Failed to fetch data.', 'error');
+            } finally {
+                loadingDiv.classList.remove('show');
+            }
+        }
+
+
+
+        // Global variable to store environment data
+        let currentEnvData = null;
+        let currentEnvMode = 'temphum';
+
+        function switchEnvChart(mode) {
+            currentEnvMode = mode;
+
+            // Update buttons
+            document.getElementById('btnTempHum').className = mode === 'temphum' ? 'toggle-btn active' : 'toggle-btn';
+            document.getElementById('btnGas').className = mode === 'gas' ? 'toggle-btn active' : 'toggle-btn';
+
+            if (currentEnvData) {
+                renderEnvChart(currentEnvData, mode);
+            }
+        }
+
+        function renderEnvChart(data, mode) {
+            const ctx = document.getElementById('envChart').getContext('2d');
+
+            if (envChart) {
+                envChart.destroy();
+            }
+
+            let datasets = [];
+            let yScales = {};
+
+            if (mode === 'temphum') {
+                datasets = [
+                    {
+                        label: 'Temperature (ºC)',
+                        data: data.temperature,
+                        borderColor: '#ff6384',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        yAxisID: 'y',
+                        tension: 0.4,
+                        pointRadius: 2
+                    },
+                    {
+                        label: 'Humidity (%)',
+                        data: data.humidity,
+                        borderColor: '#36a2eb',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        yAxisID: 'y1',
+                        tension: 0.4,
+                        pointRadius: 2
+                    }
+                ];
+                yScales = {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: 'Temperature (ºC)' },
+                        grid: { color: '#f0f0f0' }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: { display: true, text: 'Humidity (%)' },
+                        grid: { drawOnChartArea: false }
+                    }
+                };
+            } else {
+                // GASR0 Mode
+                datasets = [
+                    {
+                        label: 'GASR0 (Ω)',
+                        data: data.gasr0,
+                        borderColor: '#ffcd56',
+                        backgroundColor: 'rgba(255, 205, 86, 0.2)',
+                        yAxisID: 'y',
+                        tension: 0.4,
+                        pointRadius: 2
+                    }
+                ];
+                yScales = {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: 'GASR0 (Ω)' },
+                        grid: { color: '#f0f0f0' }
+                    }
+                };
+            }
+
+            envChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.timestamps,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'minute',
+                                displayFormats: { minute: 'HH:mm' }
+                            },
+                            title: { display: true, text: 'Time' },
+                            ticks: { maxRotation: 45, minRotation: 45 }
+                        },
+                        ...yScales
+                    },
+                    plugins: {
+                        zoom: {
+                            zoom: {
+                                wheel: { enabled: true },
+                                pinch: { enabled: true },
+                                mode: 'x'
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'x'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        /* ---------------------------------------------------------
+         *  BATTERY HISTORY LOGIC
+         * --------------------------------------------------------- */
+        async function checkBatteryHistory() {
+            const deviceIdInput = document.getElementById('battDeviceId');
+            const deviceId = deviceIdInput.value.trim();
+            const container = document.getElementById('battChartContainer');
+
+            if (!deviceId) {
+                showMessage('Please enter a Device ID', 'error');
+                return;
+            }
+
+            // Auto-fill other inputs for convenience
+            localStorage.setItem('healthDeviceId', deviceId);
+
+            loadingText.textContent = 'Fetching battery data...';
+            loadingDiv.classList.add('show');
+            messageDiv.style.display = 'none';
+            container.style.display = 'none';
+
+            try {
+                // We can reuse 'get_env_history' since it fetches the same dataset (last 3 hours)
+                // We just need to make sure the backend returns battery data too.
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'get_env_history', // Asking for env history
+                        deviceId: deviceId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    if (data.timestamps.length === 0) {
+                        showMessage('No data found for this device.', 'error');
+                    } else {
+                        // Check if battery data exists
+                        if (!data.battery) {
+                            showMessage('Battery history data not available yet (Checking old API version?)', 'error');
+                        } else {
+                            renderBatteryChart(data);
+                            container.style.display = 'block';
+                        }
+                    }
+                } else {
+                    showMessage('Error: ' + data.message, 'error');
+                }
+
+            } catch (error) {
+                console.error(error);
+                showMessage('Failed to fetch data.', 'error');
+            } finally {
+                loadingDiv.classList.remove('show');
+            }
+        }
+
+        function renderBatteryChart(data) {
+            const ctx = document.getElementById('battChart').getContext('2d');
+
+            if (battChart) {
+                battChart.destroy();
+            }
+
+            battChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.timestamps,
+                    datasets: [
+                        {
+                            label: 'Battery (%)',
+                            data: data.battery,
+                            borderColor: '#00DE93',
+                            backgroundColor: 'rgba(0, 222, 147, 0.2)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 0,
+                            pointHoverRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'minute',
+                                displayFormats: { minute: 'HH:mm' }
+                            },
+                            title: { display: true, text: 'Time' },
+                            grid: { display: false }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: 'Battery Level (%)' },
+                            min: 0,
+                            max: 100, // Battery is 0-100%
+                            grid: { color: '#f0f0f0' }
+                        }
+                    },
+                    plugins: {
+                        zoom: {
+                            zoom: {
+                                wheel: { enabled: true },
+                                pinch: { enabled: true },
+                                mode: 'x'
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'x'
+                            }
+                        },
+                        tooltip: {
+                            itemSort: function (a, b) {
+                                return b.raw - a.raw;
                             }
                         }
                     }

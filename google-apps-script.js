@@ -31,6 +31,8 @@ function doPost(e) {
       return handleGetDeviceHealth(data.deviceId);
     } else if (data.action === 'get_offline_data') {
       return handleGetOfflineData(data.deviceId);
+    } else if (data.action === 'get_env_history') {
+      return handleGetEnvHistory(data.deviceId);
     } else {
       // Default to submitting annotation
       return handleSubmitAnnotation(data);
@@ -243,6 +245,76 @@ function handleGetOfflineData(deviceId) {
     success: true,
     intervals: offlineIntervals,
     dataPoints: validTimestamps.length
+  });
+}
+
+/**
+ * Handle getting environmental history (Temp/Hum) for the last 3 hours
+ */
+function handleGetEnvHistory(deviceId) {
+  if (!deviceId) return createJsonResponse({ success: false, message: 'Device ID is required' });
+
+  const targetFile = findDeviceFile(deviceId);
+  if (!targetFile) {
+    return createJsonResponse({ success: false, message: `No files found matching Device ID "${deviceId}"` });
+  }
+
+  const csvData = readDataFromFile(targetFile);
+  if (csvData.length < 2) {
+    return createJsonResponse({ success: false, message: 'File is empty or has no data' });
+  }
+
+  const headers = csvData[0];
+
+  // Find indices
+  const tempIndex = headers.findIndex(h => h.match(/Temperature|Temp/i));
+  const humIndex = headers.findIndex(h => h.match(/Humidity|Hum/i));
+  const gasIndex = headers.findIndex(h => h.match(/GASR0|Gas\(Res\)/i));
+  const battIndex = headers.findIndex(h => h.match(/Bat\(%\)|Bat%|Battery|Batt|Charge|Voltage/i));
+  const timeIndex = headers.findIndex(h => h.match(/Timestamp|Time|Date|Created/i));
+
+  if (timeIndex === -1) {
+    return createJsonResponse({ success: false, message: 'Timestamp column not found' });
+  }
+
+  // Parse all valid rows with timestamps
+  const parsedRows = [];
+  for (let i = 1; i < csvData.length; i++) {
+    const row = csvData[i];
+    if (row[timeIndex]) {
+      const ts = new Date(row[timeIndex]);
+      if (!isNaN(ts.getTime())) {
+        parsedRows.push({
+          timestamp: ts,
+          temp: tempIndex !== -1 ? Number(row[tempIndex]) : null,
+          hum: humIndex !== -1 ? Number(row[humIndex]) : null,
+          gasr0: gasIndex !== -1 ? Number(row[gasIndex]) : null,
+          battery: battIndex !== -1 ? Number(row[battIndex]) : null
+        });
+      }
+    }
+  }
+
+  // Sort by time
+  parsedRows.sort((a, b) => a.timestamp - b.timestamp);
+
+  if (parsedRows.length === 0) {
+    return createJsonResponse({ success: true, timestamps: [], temperature: [], humidity: [] });
+  }
+
+  // Filter for last 3 hours relative to the most recent data point
+  const lastTime = parsedRows[parsedRows.length - 1].timestamp;
+  const threeHoursAgo = new Date(lastTime.getTime() - 3 * 60 * 60 * 1000);
+
+  const filteredData = parsedRows.filter(row => row.timestamp >= threeHoursAgo);
+
+  return createJsonResponse({
+    success: true,
+    timestamps: filteredData.map(r => r.timestamp.toISOString()),
+    temperature: filteredData.map(r => r.temp),
+    humidity: filteredData.map(r => r.hum),
+    gasr0: filteredData.map(r => r.gasr0),
+    battery: filteredData.map(r => r.battery)
   });
 }
 

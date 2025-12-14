@@ -673,10 +673,33 @@
 
                 <button onclick="checkBatteryHistory()" class="submit-btn" id="checkBattBtn">Plot Battery</button>
 
+                <!-- Battery View Toggle -->
+                <div id="battViewToggle"
+                    style="display: none; margin-top: 20px; text-align: center; margin-bottom: 10px;">
+                    <div class="toggle-container"
+                        style="display: inline-flex; background: #f1f5f9; border-radius: 20px; padding: 4px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);">
+                        <button class="toggle-btn active" id="btnBattChart" onclick="switchBatteryView('chart')">
+                            📈 Battery Trend
+                        </button>
+                        <button class="toggle-btn" id="btnBattAnalysis" onclick="switchBatteryView('analysis')">
+                            💡 Battery Insights
+                        </button>
+                    </div>
+                </div>
+
                 <div class="chart-container" id="battChartContainer"
-                    style="display: none; height: 350px; margin-top: 30px;">
+                    style="display: none; height: 320px; margin-top: 10px;">
                     <canvas id="battChart"></canvas>
                 </div>
+
+                <!-- Analysis Section (Hidden by default, toggled) -->
+                <div id="battAnalysis"
+                    style="display: none; height: 320px; margin-top: 10px; padding: 20px; background-color: #ffffff; border-radius: 16px; border: 1px solid #f0f0f0; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <div id="battAnalysisContent" style="width: 100%;">
+                        <!-- Content injected by JS -->
+                    </div>
+                </div>
+
             </div>
 
             <div class="loading" id="loading">
@@ -1412,7 +1435,7 @@
         async function checkBatteryHistory() {
             const deviceIdInput = document.getElementById('battDeviceId');
             const deviceId = deviceIdInput.value.trim();
-            const container = document.getElementById('battChartContainer');
+            const chartContainer = document.getElementById('battChartContainer');
 
             if (!deviceId) {
                 showMessage('Please enter a Device ID', 'error');
@@ -1425,7 +1448,7 @@
             loadingText.textContent = 'Fetching battery data...';
             loadingDiv.classList.add('show');
             messageDiv.style.display = 'none';
-            container.style.display = 'none';
+            chartContainer.style.display = 'none';
 
             try {
                 // We can reuse 'get_env_history' since it fetches the same dataset (last 3 hours)
@@ -1449,8 +1472,14 @@
                             showMessage('Battery history data not available yet (Checking old API version?)', 'error');
                         } else {
                             renderBatteryChart(data);
-                            container.style.display = 'block';
+                            updateBatteryAnalysis(data);
+
+                            // Show container and toggle
+                            document.getElementById('battViewToggle').style.display = 'block';
+                            document.getElementById('battChartContainer').style.display = 'block';
+                            switchBatteryView('chart'); // Reset to chart view
                         }
+
                     }
                 } else {
                     showMessage('Error: ' + data.message, 'error');
@@ -1543,6 +1572,166 @@
             messageDiv.style.display = 'block';
             if (type === 'success') {
                 setTimeout(() => messageDiv.style.display = 'none', 5000);
+            }
+        }
+
+        function switchBatteryView(mode) {
+            const chartContainer = document.getElementById('battChartContainer');
+            const analysisContainer = document.getElementById('battAnalysis');
+            const btnChart = document.getElementById('btnBattChart');
+            const btnAnalysis = document.getElementById('btnBattAnalysis');
+
+            if (mode === 'chart') {
+                chartContainer.style.display = 'block';
+                analysisContainer.style.display = 'none';
+                btnChart.classList.add('active');
+                btnAnalysis.classList.remove('active');
+            } else {
+                chartContainer.style.display = 'none';
+                analysisContainer.style.display = 'flex'; // Use flex to center content
+                btnChart.classList.remove('active');
+                btnAnalysis.classList.add('active');
+            }
+        }
+
+        function updateBatteryAnalysis(data) {
+            const contentDiv = document.getElementById('battAnalysisContent');
+
+            if (!data.timestamps || data.timestamps.length < 2) {
+                contentDiv.innerHTML = '<p>Insufficient data for analysis.</p>';
+                return;
+            }
+
+            // Prepare arrays
+            const times = data.timestamps.map(t => new Date(t).getTime());
+            const levels = data.battery;
+            const startIdx = 0;
+            const endIdx = levels.length - 1;
+
+            const startTime = times[startIdx];
+            const endTime = times[endIdx];
+            const startLevel = levels[startIdx];
+            const endLevel = levels[endIdx];
+
+            const durationHrs = (endTime - startTime) / (1000 * 60 * 60);
+            const drop = startLevel - endLevel;
+
+            if (durationHrs <= 0) return;
+
+            const dischargeRate = drop / durationHrs; // % per hour
+
+            // Custom CSS Battery Icon Generator
+            const getBatteryIconHtml = (level, isCharging) => {
+                const color = level <= 10 ? '#ff4d4d' : (isCharging ? '#ffc107' : '#00DE93');
+                const boltHtml = isCharging ? `<span class="material-symbols-rounded" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:16px; color:#333;">bolt</span>` : '';
+
+                return `
+                <div style="position: relative; width: 40px; height: 20px; border: 2px solid ${color}; border-radius: 4px; display: inline-block; margin-right: 4px;">
+                    <div style="height: 100%; width: ${level}%; background-color: ${color}; border-radius: 1px; transition: width 0.5s;"></div>
+                    <div style="position: absolute; right: -5px; top: 4px; width: 3px; height: 8px; background-color: ${color}; border-radius: 0 2px 2px 0;"></div>
+                    ${boltHtml}
+                </div>`;
+            };
+
+            if (dischargeRate > 1) {
+                // Discharging
+                const currentLevel = endLevel;
+                const effectiveCapacity = Math.max(0, currentLevel - 10);
+                const hrsLeft = effectiveCapacity / dischargeRate;
+
+                if (currentLevel <= 10) {
+                    let statusColor = '#ff4d4d'; // Red
+                    let mainValue = 'Critical';
+                    let subLabel = 'Battery < 10%';
+                    let detailHtml = `<p style="color: #666; margin-top: 10px;">Device operation has likely stopped.</p>`;
+
+                    // Use CSS Icon
+                    contentDiv.innerHTML = `
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                ${getBatteryIconHtml(currentLevel, false)}
+                                <span style="font-size: 20px; font-weight: 700; color: ${statusColor}">${currentLevel.toFixed(0)}%</span>
+                            </div>
+                            <div style="font-size: 32px; font-weight: 700; color: ${statusColor}; letter-spacing: -1px; line-height: 1.2;">${mainValue}</div>
+                            <div style="font-size: 14px; color: #6b7280; font-weight: 500;">${subLabel}</div>
+                            ${detailHtml}
+                        </div>
+                    `;
+                } else {
+                    let statusColor = '#1f2937';
+                    let mainValue = `~${hrsLeft.toFixed(1)}h`;
+
+                    // Calculate "Until" time
+                    const now = new Date();
+                    const targetTime = new Date(now.getTime() + hrsLeft * 3600000); // hrs to ms
+                    const timeStr = targetTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                    const dateStr = targetTime.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+                    let subLabel = `<span style="display:block; font-size: 12px; color: #9ca3af; margin-top: 4px;">Until ${timeStr}<br>${dateStr}</span>`;
+
+                    contentDiv.innerHTML = `
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+                                <div style="transform: scale(1.5);">
+                                    ${getBatteryIconHtml(currentLevel, false)}
+                                </div>
+                                <span style="font-size: 28px; font-weight: 700; color: #333;">${currentLevel.toFixed(0)}%</span>
+                            </div>
+                            <div style="font-size: 48px; font-weight: 700; color: ${statusColor}; letter-spacing: -2px; line-height: 1;">${mainValue}</div>
+                            <div style="font-size: 14px; color: #6b7280; font-weight: 500; margin-top: 5px;">${subLabel}</div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 25px; width: 80%;">
+                                <div style="background: #f8f9fa; padding: 8px; border-radius: 12px;">
+                                    <div style="font-size: 10px; color: #888; text-transform: uppercase;">Rate</div>
+                                    <div style="font-size: 14px; font-weight: 600; color: #333;">${dischargeRate.toFixed(1)}% / hr</div>
+                                </div>
+                                <div style="background: #f8f9fa; padding: 8px; border-radius: 12px;">
+                                    <div style="font-size: 10px; color: #888; text-transform: uppercase;">Level</div>
+                                    <div style="font-size: 14px; font-weight: 600; color: #333;">${currentLevel.toFixed(1)}%</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+            } else if (dischargeRate < -1) {
+                // Charging
+                let mainValue = 'Charging';
+                let subLabel = `+${Math.abs(dischargeRate).toFixed(1)}% / hr`;
+                const currentLevel = endLevel;
+
+                contentDiv.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+                            <div style="transform: scale(1.5);">
+                                    ${getBatteryIconHtml(currentLevel, true)}
+                            </div>
+                            <span style="font-size: 28px; font-weight: 700; color: #ffc107;">${currentLevel.toFixed(0)}%</span>
+                        </div>
+                        <div style="font-size: 36px; font-weight: 700; color: #ffc107; letter-spacing: -1px; line-height: 1.2;">${mainValue}</div>
+                         <div style="font-size: 14px; color: #6b7280; font-weight: 500;">${subLabel}</div>
+                         <p style="color: #9ca3af; font-size: 12px; margin-top: 15px;">Device is plugged in.</p>
+                    </div>
+                `;
+
+            } else {
+                // Stable
+                let mainValue = 'Stable';
+                let subLabel = 'Consumption < 1% / hr';
+                const currentLevel = endLevel;
+
+                contentDiv.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+                            <div style="transform: scale(1.5);">
+                                    ${getBatteryIconHtml(currentLevel, false)}
+                            </div>
+                            <span style="font-size: 28px; font-weight: 700; color: #00DE93;">${currentLevel.toFixed(0)}%</span>
+                        </div>
+                        <div style="font-size: 42px; font-weight: 700; color: #00DE93; letter-spacing: -1px; line-height: 1.2;">${mainValue}</div>
+                        <div style="font-size: 14px; color: #6b7280; font-weight: 500;">${subLabel}</div>
+                    </div>
+                `;
             }
         }
     </script>

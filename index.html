@@ -835,6 +835,12 @@
             if (savedHealthDeviceId) {
                 document.getElementById('healthDeviceId').value = savedHealthDeviceId;
             }
+
+            const savedBattDeviceId = localStorage.getItem('battDeviceId');
+            if (savedBattDeviceId) {
+                const battInput = document.getElementById('battDeviceId');
+                if (battInput) battInput.value = savedBattDeviceId;
+            }
         });
 
         function restoreSelection(select, customInput, savedValue) {
@@ -1443,7 +1449,8 @@
             }
 
             // Auto-fill other inputs for convenience
-            localStorage.setItem('healthDeviceId', deviceId);
+            localStorage.setItem('battDeviceId', deviceId); // Save specifically for battery tab
+            localStorage.setItem('healthDeviceId', deviceId); // Sync with health tab optionally
 
             loadingText.textContent = 'Fetching battery data...';
             loadingDiv.classList.add('show');
